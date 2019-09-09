@@ -2,9 +2,15 @@
 // Created by Spandan Das on 9/9/2019.
 //
 #include <iostream>
-#include <math.h>
-#include <random>
+#include <cmath>
+//include <random>
 using namespace std;
+
+struct Coord {
+    int x;
+    int y;
+};
+
 double random(double min, double max) {
     return (double) (min + (max - min) * ((double) rand() / RAND_MAX)); //--> old
 //    uniform_real_distribution<double> ran(min, max);
@@ -62,6 +68,8 @@ int main() {
     cout << "incenter: (" << incenter[0] << ", " << incenter[1] << ")" << endl;
     cout << "circumcenter: (" << circumcenter[0] << ", " << circumcenter[1] << ")" << endl;
 
+    
     // TO-DO: euler line, nine point circle, and graphics
+
     return 0;
 }
