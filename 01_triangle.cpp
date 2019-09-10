@@ -3,19 +3,41 @@
 //
 #include <iostream>
 #include <cmath>
-//include <random>
+#include <time.h>
+#include <fstream>
+
 using namespace std;
 
-struct Coord {
+
+typedef struct Point {
     int x;
     int y;
-};
+    Point(double x, double y) {
+        this -> x = x/1;
+        this -> y = y/1;
+    }
+}pt;
 
+typedef struct Color {
+    int r;
+    int g;
+    int b;
+    Color() {
+        r = 0;
+        g = 0;
+        b = 0;
+    }
+
+    Color(int r, int g, int b) {
+        this->r = r;
+        this->g = g;
+        this->b = b;
+    }
+} col;
+
+static col ppm[800][800];
 double random(double min, double max) {
     return (double) (min + (max - min) * ((double) rand() / RAND_MAX)); //--> old
-//    uniform_real_distribution<double> ran(min, max);
-//    default_random_engine re;
-//    return ran(re);
 }
 
 double dist(double x1, double y1, double x2, double y2) {
@@ -42,9 +64,24 @@ void getCircumcenter(double cir[2], double v[3][2], double a, double b, double c
     cir[1] = l1*v[0][1] + l2*v[1][1] + l3*v[2][1];
 }
 
+void drawpt(int x, int y, int r, int g, int b) {
+    ppm[x][y].r = r; ppm[x][y].g = g; ppm[x][y].b = b;
+}
+
+void draw(int x1, int y1, int x2, int y2) {
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    int j = y1;
+    int eps = dy - dx;
+    for (int i = x1; i < x2; i++) {
+        drawpt(i, j, 0, 0, 0);
+
+    }
+}
+
 int main() {
-    //srand(1509919);
-    cout << "Hello, World!" << std::endl;
+    srand(time(nullptr));
+    //cout << "Hello, World!" << std::endl;
     double v[3][2] = {{random(0.0, 800.0), random(0.0, 800.0)},
                       {random(0.0, 800.0), random(0.0, 800.0)},
                       {random(0.0, 800.0), random(0.0, 800.0)}};
@@ -70,6 +107,22 @@ int main() {
 
     
     // TO-DO: euler line, nine point circle, and graphics
+    pt vert[3] = {Point(v[0][0], v[0][1]), Point(v[1][0], v[1][1]), Point(v[2][0], v[2][1])};
+//    for (auto & i : vert) {
+//        cout << i.x << ", " << i.y << endl;
+//    }
 
+    ofstream fout;
+    fout.open("01_triangle.ppm");
+    fout << "P3 800 800 1" << endl;
+    draw(300, 500, 150, 170);
+    //draw(vert[0].x, vert[0].y, vert[1].x, vert[1].y);
+    for (auto & i : ppm) {
+        for (auto &j : i) {
+            fout << j.r << " " << j.g << " " << j.b << " ";
+        }
+        fout << endl;
+    }
+    fout.close();
     return 0;
 }
