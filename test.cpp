@@ -21,6 +21,7 @@ typedef struct Color {
     }
 } col;
 
+
 int main() {
     ofstream fout("test.ppm");
     fout << "P3 800 800 1" << endl;
