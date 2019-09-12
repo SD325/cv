@@ -3,7 +3,7 @@
 //
 #include <iostream>
 #include <cmath>
-#include <time.h>
+#include <ctime>
 #include <fstream>
 
 using namespace std;
@@ -126,9 +126,9 @@ void drawLineNeg(int x1, int y1, int x2, int y2) {
     double eps = m - 1.0;
     for (int i = x1 - 1; i > x2; i--) {
         if (greater) {
-            drawpt(x1 - (j - y1), y1 - (i - x1), 1, 1, 1);
+            drawpt(x1 - (j - y1), y1 - (i - x1), 0, 0, 0);
         }
-        else drawpt(i, j, 1, 1, 1);
+        else drawpt(i, j, 0, 0, 0);
         if (eps >= 0) {
             j++;
             eps -= 1.0;
@@ -156,8 +156,8 @@ void drawLinePos(int x1, int y1, int x2, int y2) {
     double eps = m - 1.0;
     for (int i = x1; i < x2; i++) {
         if (switched)
-            drawpt(j, i, 1, 1, 1);
-        else drawpt(i, j, 1, 1, 1);
+            drawpt(j, i, 0, 0, 0);
+        else drawpt(i, j, 0, 0, 0);
         if (eps >= 0) {
             j++;
             eps -= 1.0;
@@ -193,14 +193,14 @@ void drawCircle(int cx, int cy, double r) {
             y -= 1;
             ty -= 2;
         }
-        drawpt(x+cx, y+cy, 1, 1, 1);
-        drawpt(x+cx, -y+cy, 1, 1, 1);
-        drawpt(-x+cx, y+cy, 1, 1, 1);
-        drawpt(-x+cx, -y+cy, 1, 1, 1);
-        drawpt(y+cx, x+cy, 1, 1, 1);
-        drawpt(y+cx, -x+cy, 1, 1, 1);
-        drawpt(-y+cx, x+cy, 1, 1, 1);
-        drawpt(-y+cx, -x+cy, 1, 1, 1);
+        drawpt(x+cx, y+cy, 0, 0, 0);
+        drawpt(x+cx, -y+cy, 0, 0, 0);
+        drawpt(-x+cx, y+cy, 0, 0, 0);
+        drawpt(-x+cx, -y+cy, 0, 0, 0);
+        drawpt(y+cx, x+cy, 0, 0, 0);
+        drawpt(y+cx, -x+cy, 0, 0, 0);
+        drawpt(-y+cx, x+cy, 0, 0, 0);
+        drawpt(-y+cx, -x+cy, 0, 0, 0);
 
         y2_new -= (2 * x) - 3;
 
@@ -210,7 +210,7 @@ void drawCircle(int cx, int cy, double r) {
 
 int main() {
     //srand(time(0));
-    srand(time(0));
+    srand(time(nullptr));
     double v[3][2] = {{random(0.0, 800.0), random(0.0, 800.0)},
                       {random(0.0, 800.0), random(0.0, 800.0)},
                       {random(0.0, 800.0), random(0.0, 800.0)}};
@@ -237,18 +237,28 @@ int main() {
     double circumradius = getCircumrad(a, b, c);
     pt circumcen = Point(circumcenter[0], circumcenter[1]);
 
-    cout << "incenter: (" << incenter[0] << ", " << incenter[1] << ")" << endl;
-    cout << "circumcenter: (" << circumcenter[0] << ", " << circumcenter[1] << ")" << endl;
+//    cout << "incenter: (" << incenter[0] << ", " << incenter[1] << ")" << endl;
+//    cout << "circumcenter: (" << circumcenter[0] << ", " << circumcenter[1] << ")" << endl;
 
 
     // TO-DO: euler line, nine point circle, and graphics
     pt vert[3] = {Point(v[0][0], v[0][1]), Point(v[1][0], v[1][1]), Point(v[2][0], v[2][1])};
-    cout << "p0: " << fixed << "(" << vert[0].x << ", " << vert[0].y << ")" << endl;
-    cout << "p1: " << fixed << "(" << vert[1].x << ", " << vert[1].y << ")" << endl;
-    cout << "p2: " << fixed << "(" << vert[2].x << ", " << vert[2].y << ")" << endl;
+//    cout << "p0: " << fixed << "(" << vert[0].x << ", " << vert[0].y << ")" << endl;
+//    cout << "p1: " << fixed << "(" << vert[1].x << ", " << vert[1].y << ")" << endl;
+//    cout << "p2: " << fixed << "(" << vert[2].x << ", " << vert[2].y << ")" << endl;
 
     ofstream image("01_triangle.ppm");
     image << "P3 800 800 1" << endl;
+
+    // white background
+    for (auto & i : ppm) {
+        for (auto & j : i) {
+            j.r = 1;
+            j.g = 1;
+            j.b = 1;
+        }
+    }
+
     //drawLine(100, 100, 600, 450); // positive slope and < 1
     //drawLine(600, 750, 100, 100); // positive slope and > 1
     //drawLine(100, 700, 350, 600); // negative slope and < 1
