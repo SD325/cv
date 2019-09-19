@@ -12,6 +12,7 @@ typedef struct Point {
     int x;
     int y;
 
+    // convert to integers
     Point(double x, double y) {
         this->x = x / 1;
         this->y = y / 1;
@@ -39,6 +40,8 @@ typedef struct Color {
 static col ppm[800][800];
 
 double random(double min, double max) {
+    // generates random double in the range [0, 1)
+    // then scales up to max (in this lab, 800)
     return (double) (min + (max - min) * ((double) rand() / RAND_MAX)); //--> old
 }
 
