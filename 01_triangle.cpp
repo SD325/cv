@@ -212,43 +212,31 @@ void drawCircle(int cx, int cy, double r) {
 }
 
 int main() {
-    //srand(time(0));
     srand(time(nullptr));
+    // coordinates of vertices are doubles
     double v[3][2] = {{random(0.0, 800.0), random(0.0, 800.0)},
                       {random(0.0, 800.0), random(0.0, 800.0)},
                       {random(0.0, 800.0), random(0.0, 800.0)}};
 
-    //print to three decimal places
-    //cout.precision(3);
-//    cout << "p0: " << fixed << "(" << v[0][0] << ", " << v[0][1] << ")" << endl;
-//    cout << "p1: " << fixed << "(" << v[1][0] << ", " << v[1][1] << ")" << endl;
-//    cout << "p2: " << fixed << "(" << v[2][0] << ", " << v[2][1] << ")" << endl;
-
-    double a = dist(v[1][0], v[1][1], v[2][0], v[2][1]);
-    double b = dist(v[0][0], v[0][1], v[2][0], v[2][1]);
-    double c = dist(v[0][0], v[0][1], v[1][0], v[1][1]);
+    double a = dist(v[1][0], v[1][1], v[2][0], v[2][1]); // side a
+    double b = dist(v[0][0], v[0][1], v[2][0], v[2][1]); // side b
+    double c = dist(v[0][0], v[0][1], v[1][0], v[1][1]); // side c
 
     double incenter[2];
     getIncenter(incenter, v, a, b, c);
     double inradius = getInrad(a, b, c);
+    // until now all relevant calculations double,
+    // now convert to int
     pt incen = Point(incenter[0], incenter[1]);
-
-
 
     double circumcenter[2];
     getCircumcenter(circumcenter, v, a, b, c);
     double circumradius = getCircumrad(a, b, c);
+    // until now all relevant calculations double,
+    // now convert to int
     pt circumcen = Point(circumcenter[0], circumcenter[1]);
 
-//    cout << "incenter: (" << incenter[0] << ", " << incenter[1] << ")" << endl;
-//    cout << "circumcenter: (" << circumcenter[0] << ", " << circumcenter[1] << ")" << endl;
-
-
-    // TO-DO: euler line, nine point circle, and graphics
     pt vert[3] = {Point(v[0][0], v[0][1]), Point(v[1][0], v[1][1]), Point(v[2][0], v[2][1])};
-//    cout << "p0: " << fixed << "(" << vert[0].x << ", " << vert[0].y << ")" << endl;
-//    cout << "p1: " << fixed << "(" << vert[1].x << ", " << vert[1].y << ")" << endl;
-//    cout << "p2: " << fixed << "(" << vert[2].x << ", " << vert[2].y << ")" << endl;
 
     ofstream image("01_triangle.ppm");
     image << "P3 800 800 1" << endl;
@@ -262,10 +250,7 @@ int main() {
         }
     }
 
-    //drawLine(100, 100, 600, 450); // positive slope and < 1
-    //drawLine(600, 750, 100, 100); // positive slope and > 1
-    //drawLine(100, 700, 350, 600); // negative slope and < 1
-    //drawLine(100, 700, 200, 100); // negative slope and > 1
+    // now convert to int to draw lines
     drawLine(vert[0].x, vert[0].y, vert[1].x, vert[1].y);
     drawLine(vert[0].x, vert[0].y, vert[2].x, vert[2].y);
     drawLine(vert[1].x, vert[1].y, vert[2].x, vert[2].y);
@@ -283,11 +268,12 @@ int main() {
 
     double nineCenter[2];
     getNinePointCenter(nineCenter, midpoint0, midpoint1, midpoint2, middist0, middist1, middist2);
+    // until now all relevant calculations double,
+    // now convert to int
     pt ninecen = Point(nineCenter[0], nineCenter[1]);
 
     drawCircle(ninecen.x, ninecen.y, dist(ninecen.x, ninecen.y, midpoint0[0], midpoint0[1]));
 
-    // print so that (0,0) is bottom left like Cartesian
     for (auto &i : ppm) {
         for (auto &j : i) {
             image << j.r << " " << j.g << " " << j.b << " ";
