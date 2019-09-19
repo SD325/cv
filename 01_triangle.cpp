@@ -184,7 +184,7 @@ void drawLine(int x1, int y1, int x2, int y2) {
 
 void drawCircle(int cx, int cy, double r) {
     int x, y, xmax, y2, y2_new, ty;
-    xmax = (int) (r * 0.70710678); // maximum x at radius/sqrt(2)
+    xmax = (int) (r * 0.70710678)+1; // maximum x at radius/sqrt(2)
     y  = (int) r;
     y2 = y * y;
     ty = (2 * y) - 1;
