@@ -6,19 +6,23 @@
 #include <ctime>
 #include <fstream>
 
+#define N 200
+
 using namespace std;
 
 class Point {
-    public:
-        double x;
-        double y;
-        Point(double x_, double y_) {
-            x = x_;
-            y = y_;
-        }
-        Point() {
-            Point(0, 0);
-        }
+public:
+    double x;
+    double y;
+
+    Point(double x_, double y_) {
+        x = x_;
+        y = y_;
+    }
+
+    Point() {
+        Point(0, 0);
+    }
 };
 
 typedef struct Color {
@@ -39,7 +43,7 @@ typedef struct Color {
     }
 } col;
 
-static col ppm[800][800];
+static col ppm[N][N];
 
 double random() {
     return (double) rand() / RAND_MAX;
@@ -50,7 +54,7 @@ double dist(double x1, double y1, double x2, double y2) {
 }
 
 void drawpt(int x, int y, int r, int g, int b) {
-    if (x < 0 || x >= 800 || y < 0 || y >= 800) return;
+    if (x < 0 || x >= N || y < 0 || y >= N) return;
     ppm[x][y].r = r;
     ppm[x][y].g = g;
     ppm[x][y].b = b;
@@ -61,10 +65,19 @@ int main() {
     srand(time(nullptr));
     // coordinates of vertices are doubles
     Point pts[40];
-    for (auto & pt : pts) {
+
+    // white background
+    for (auto &i : ppm) {
+        for (auto &j : i) {
+            j.r = 1;
+            j.g = 1;
+            j.b = 1;
+        }
+    }
+    for (auto &pt : pts) {
         pt = Point(random(), random());
-        int roundedX = (int)(800 * pt.x);
-        int roundedY = (int)(800 * pt.y);
+        int roundedX = (int) (N * pt.x);
+        int roundedY = (int) (N * pt.y);
         //cout << roundedX << " " << roundedY << endl;
         drawpt(roundedX, roundedY, 0, 0, 0);
     }
@@ -81,42 +94,35 @@ int main() {
             }
         }
     }
-    int rounded_x1 = (int)(800 * pts[minInd[0]].x);
-    int rounded_y1 = (int)(800 * pts[minInd[0]].y);
+    int rounded_x1 = (int) (N * pts[minInd[0]].x);
+    int rounded_y1 = (int) (N * pts[minInd[0]].y);
     drawpt(rounded_x1, rounded_y1, 1, 0, 0);
-    int rounded_x2 = (int)(800 * pts[minInd[1]].x);
-    int rounded_y2 = (int)(800 * pts[minInd[1]].y);
+    int rounded_x2 = (int) (N * pts[minInd[1]].x);
+    int rounded_y2 = (int) (N * pts[minInd[1]].y);
     drawpt(rounded_x2, rounded_y2, 1, 0, 0);
+
+    //cout << rounded_x1 << " " << rounded_y1 << endl;
+    //cout << rounded_x2 << " " << rounded_y2 << endl;
 
 
 
     // WRITE TO PPM
     ofstream image("02_closest_pair.ppm");
-    image << "P3 800 800 1" << endl;
-
-    // white background
-    for (auto & i : ppm) {
-        for (auto & j : i) {
-            j.r = 1;
-            j.g = 1;
-            j.b = 1;
-        }
-    }
+    image << "P3 " << N << " " << N << " 1" << endl;
 
     for (auto &i : ppm) {
         for (auto &j : i) {
             image << j.r << " " << j.g << " " << j.b << " ";
-            if (j.b == 0) cout << "asdf"<< endl;
         }
         image << endl;
     }
 
-    for (auto &i : ppm) {
-        for (auto &j : i) {
-            cout << j.r << " " << j.g << " " << j.b << " ";
-        }
-        image << endl;
-    }
+//    for (auto &i : ppm) {
+//        for (auto &j : i) {
+//            cout << j.r << " " << j.g << " " << j.b << " ";
+//        }
+//        cout << endl;
+//    }
     image.close();
     return 0;
 }
