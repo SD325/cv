@@ -60,6 +60,27 @@ void drawpt(int x, int y, int r, int g, int b) {
     ppm[x][y].b = b;
 }
 
+void brute_force(Point pts[40]) {
+    double min_dist = LONG_MAX;
+    int minInd[2];
+    double old;
+    for (int i = 0; i < 40; i++) {
+        for (int j = 0; j < i; j++) {
+            old = min_dist;
+            min_dist = min(min_dist, dist(pts[i].x, pts[i].y, pts[j].x, pts[j].y));
+            if (min_dist < old) {
+                minInd[0] = i;
+                minInd[1] = j;
+            }
+        }
+    }
+    int rounded_x1 = (int) (N * pts[minInd[0]].x);
+    int rounded_y1 = (int) (N * pts[minInd[0]].y);
+    drawpt(rounded_x1, rounded_y1, 1, 0, 0);
+    int rounded_x2 = (int) (N * pts[minInd[1]].x);
+    int rounded_y2 = (int) (N * pts[minInd[1]].y);
+    drawpt(rounded_x2, rounded_y2, 1, 0, 0);
+}
 
 int main() {
     srand(time(nullptr));
@@ -81,29 +102,9 @@ int main() {
         //cout << roundedX << " " << roundedY << endl;
         drawpt(roundedX, roundedY, 0, 0, 0);
     }
-    double min_dist = LONG_MAX;
-    int minInd[2];
-    double old;
-    for (int i = 0; i < 40; i++) {
-        for (int j = 0; j < i; j++) {
-            old = min_dist;
-            min_dist = min(min_dist, dist(pts[i].x, pts[i].y, pts[j].x, pts[j].y));
-            if (min_dist < old) {
-                minInd[0] = i;
-                minInd[1] = j;
-            }
-        }
-    }
-    int rounded_x1 = (int) (N * pts[minInd[0]].x);
-    int rounded_y1 = (int) (N * pts[minInd[0]].y);
-    drawpt(rounded_x1, rounded_y1, 1, 0, 0);
-    int rounded_x2 = (int) (N * pts[minInd[1]].x);
-    int rounded_y2 = (int) (N * pts[minInd[1]].y);
-    drawpt(rounded_x2, rounded_y2, 1, 0, 0);
 
-    //cout << rounded_x1 << " " << rounded_y1 << endl;
-    //cout << rounded_x2 << " " << rounded_y2 << endl;
-
+    // calculate minimum distance
+    brute_force(pts);
 
 
     // WRITE TO PPM
@@ -116,13 +117,6 @@ int main() {
         }
         image << endl;
     }
-
-//    for (auto &i : ppm) {
-//        for (auto &j : i) {
-//            cout << j.r << " " << j.g << " " << j.b << " ";
-//        }
-//        cout << endl;
-//    }
     image.close();
     return 0;
 }
