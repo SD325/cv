@@ -5,8 +5,10 @@
 #include <cmath>
 #include <ctime>
 #include <fstream>
+#include <algorithm>
 
-#define N 200
+#define N 200 // resolution of ppm file
+#define size 40 // number of points
 
 using namespace std;
 
@@ -23,6 +25,10 @@ public:
     Point() {
         Point(0, 0);
     }
+    bool operator <(const Point & pt) const {
+        return x < pt.x;
+    }
+
 };
 
 typedef struct Color {
@@ -60,11 +66,11 @@ void drawpt(int x, int y, int r, int g, int b) {
     ppm[x][y].b = b;
 }
 
-void brute_force(Point pts[40]) {
+void brute_force(Point pts[size]) {
     double min_dist = LONG_MAX;
     int minInd[2];
     double old;
-    for (int i = 0; i < 40; i++) {
+    for (int i = 0; i < size; i++) {
         for (int j = 0; j < i; j++) {
             old = min_dist;
             min_dist = min(min_dist, dist(pts[i].x, pts[i].y, pts[j].x, pts[j].y));
@@ -82,10 +88,26 @@ void brute_force(Point pts[40]) {
     drawpt(rounded_x2, rounded_y2, 1, 0, 0);
 }
 
+
+int* merge_helper(Point sx[], Point sy[], int size_) {
+    // return indices of the original array which contain two closest points
+}
+
+
+void merge_find(Point pts[size]) {
+    Point sortedX[size]; // points sorted by x values
+    Point sortedY[size]; // points sorted by y values
+    for (int i = 0; i < size; i++) sortedX[i] = sortedY[i] = pts[i];
+    sort(sortedX, sortedX+size);
+    sort(sortedY, sortedY+size);
+
+}
+
+
 int main() {
     srand(time(nullptr));
     // coordinates of vertices are doubles
-    Point pts[40];
+    Point pts[size];
 
     // white background
     for (auto &i : ppm) {
@@ -99,12 +121,12 @@ int main() {
         pt = Point(random(), random());
         int roundedX = (int) (N * pt.x);
         int roundedY = (int) (N * pt.y);
-        //cout << roundedX << " " << roundedY << endl;
         drawpt(roundedX, roundedY, 0, 0, 0);
     }
 
     // calculate minimum distance
-    brute_force(pts);
+    //brute_force(pts);
+    merge_find(pts);
 
 
     // WRITE TO PPM
