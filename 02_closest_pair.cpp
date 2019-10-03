@@ -88,51 +88,47 @@ vector<int> brute_force(int l, int r, Point p[]) {
 
 
 vector<int> merge_helper(int l, int r, int size_) {
-    if (size_ <= 3) return brute_force(l, r, pts);
+    if (size_ <= 3) {
+        return brute_force(l, r, pts);
+    }
     int middle = size_/2;
     vector<int> left_pts = merge_helper(l, middle-1, middle-l);
     vector<int> right_pts = merge_helper(middle, r, r-middle+1);
     double left_dist = dist(pts[left_pts.at(0)], pts[left_pts.at(1)]);
     double right_dist = dist(pts[right_pts.at(0)], pts[right_pts.at(1)]);
 
-    double min_dist = min(left_dist, right_dist);
-    bool min_is_left = (min_dist == left_dist);
-
-    vector<Point> inside_ind;
+    vector<int> min_ind;
+    double min_dist;
+    if (left_dist < right_dist) {
+        min_dist = left_dist;
+        min_ind.push_back(left_pts.at(0));
+        min_ind.push_back(left_pts.at(1));
+    }
+    else {
+        min_dist = right_dist;
+        min_ind.push_back(right_pts.at(0));
+        min_ind.push_back(right_pts.at(1));
+    }
+    vector<Point> inside;
     double mid_x = (pts[middle-1].x + pts[middle].x)/2.0;
     for (int i = l; i <= r; i++) {
         if (abs(pts[i].x - mid_x) < min_dist) {
-            inside_ind.push_back(pts[i]);
+            inside.push_back(pts[i]);
         }
     }
 
-    double min_dist_inside = LONG_MAX;
-    double old;
-    vector<int> minIndInside(2);
+    double thisdist;
     for (int i = l; i <= r; i++) {
         for (int j = i+1; j <=r; j++) {
-            old = min_dist;
-            min_dist_inside = min(min_dist_inside, dist(inside_ind.at(i), inside_ind.at(j)));
-            if (min_dist < old) {
-                minIndInside.at(0) = i;
-                minIndInside.at(1) = j;
+            thisdist = dist(inside.at(i), inside.at(j));
+            if (thisdist < min_dist) {
+                min_dist = thisdist;
+                min_ind.at(0) = i;
+                min_ind.at(1) = j;
             }
         }
     }
-
-    double dist_inside = dist(pts[minIndInside.at(0)], pts[minIndInside.at(1)]);
-    if (dist_inside < min_dist) {
-        cout << "hi\n";
-        return minIndInside;
-    }
-    else if (min_is_left){
-        cout << "ye\n";
-        return left_pts;
-    }
-    else{
-        cout << "ne\n";
-        return right_pts;
-    }
+    return min_ind;
 }
 
 
