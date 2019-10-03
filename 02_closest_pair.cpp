@@ -74,7 +74,7 @@ vector<int> brute_force(int l, int r, Point p[]) {
     double old;
     vector<int> minInd(2);
     for (int i = l; i <= r; i++) {
-        for (int j = l; j < i; j++) {
+        for (int j = i+1; j <=r; j++) {
             old = min_dist;
             min_dist = min(min_dist, dist(p[i], p[j]));
             if (min_dist < old) {
@@ -88,35 +88,51 @@ vector<int> brute_force(int l, int r, Point p[]) {
 
 
 vector<int> merge_helper(int l, int r, int size_) {
-    if (size_ <= 3) {
-        return brute_force(l, r, pts);
-    }
+    if (size_ <= 3) return brute_force(l, r, pts);
     int middle = size_/2;
-    vector<int> left_pts = merge_helper(l, middle, middle-l+1);
-    vector<int> right_pts = merge_helper(middle+1, r, middle+1-r+1);
+    vector<int> left_pts = merge_helper(l, middle-1, middle-l);
+    vector<int> right_pts = merge_helper(middle, r, r-middle+1);
     double left_dist = dist(pts[left_pts.at(0)], pts[left_pts.at(1)]);
     double right_dist = dist(pts[right_pts.at(0)], pts[right_pts.at(1)]);
 
     double min_dist = min(left_dist, right_dist);
     bool min_is_left = (min_dist == left_dist);
 
-    Point inside_mid[size_];
-    vector<int> inside_ind;
-    Point midpoint = pts[middle];
-    int index = 0;
+    vector<Point> inside_ind;
+    double mid_x = (pts[middle-1].x + pts[middle].x)/2.0;
     for (int i = l; i <= r; i++) {
-        if (abs(pts[i].x - midpoint.x) < min_dist) {
-            inside_mid[index++] = pts[i];
-            inside_ind.push_back(i);
+        if (abs(pts[i].x - mid_x) < min_dist) {
+            inside_ind.push_back(pts[i]);
         }
     }
-    vector<int> inside_fake = brute_force(0, index-1, inside_mid);
-    vector<int> inside {inside_ind.at(inside_fake.at(0)), inside_ind.at(inside_fake.at(1))};
-    double dist_inside = dist(pts[inside.at(0)], pts[inside.at(1)]);
-    // return smallest distance
-    if (dist_inside < min_dist) return inside;
-    else if (min_is_left) return left_pts;
-    else return right_pts;
+
+    double min_dist_inside = LONG_MAX;
+    double old;
+    vector<int> minIndInside(2);
+    for (int i = l; i <= r; i++) {
+        for (int j = i+1; j <=r; j++) {
+            old = min_dist;
+            min_dist_inside = min(min_dist_inside, dist(inside_ind.at(i), inside_ind.at(j)));
+            if (min_dist < old) {
+                minIndInside.at(0) = i;
+                minIndInside.at(1) = j;
+            }
+        }
+    }
+
+    double dist_inside = dist(pts[minIndInside.at(0)], pts[minIndInside.at(1)]);
+    if (dist_inside < min_dist) {
+        cout << "hi\n";
+        return minIndInside;
+    }
+    else if (min_is_left){
+        cout << "ye\n";
+        return left_pts;
+    }
+    else{
+        cout << "ne\n";
+        return right_pts;
+    }
 }
 
 
