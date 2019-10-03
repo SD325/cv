@@ -9,7 +9,7 @@
 #include <vector>
 
 #define N 200 // resolution of ppm file
-#define size 5 // number of points
+#define size 40 // number of points
 
 using namespace std;
 
@@ -69,12 +69,12 @@ void drawpt(int x, int y, int r, int g, int b) {
     ppm[x][y].b = b;
 }
 
-vector<int> brute_force(Point p[], int size_) {
+vector<int> brute_force(int l, int r, Point p[]) {
     double min_dist = LONG_MAX;
     double old;
     vector<int> minInd(2);
-    for (int i = 0; i < size_; i++) {
-        for (int j = 0; j < i; j++) {
+    for (int i = l; i <= r; i++) {
+        for (int j = l; j < i; j++) {
             old = min_dist;
             min_dist = min(min_dist, dist(p[i], p[j]));
             if (min_dist < old) {
@@ -89,26 +89,29 @@ vector<int> brute_force(Point p[], int size_) {
 
 vector<int> merge_helper(int l, int r, int size_) {
     if (size_ <= 3) {
-        Point temp[size_];
-        for (int i = l; i <= r; i++) temp[i-l] = pts[i];
-        return brute_force(temp, size_);
+        return brute_force(l, r, pts);
     }
     int middle = size_/2;
     vector<int> left_pts = merge_helper(l, middle, middle-l+1);
     vector<int> right_pts = merge_helper(middle+1, r, middle+1-r+1);
     double left_dist = dist(pts[left_pts.at(0)], pts[left_pts.at(1)]);
-    double right_dist = dist(pts[left_pts.at(0)], pts[left_pts.at(1)]);
+    double right_dist = dist(pts[right_pts.at(0)], pts[right_pts.at(1)]);
 
     double min_dist = min(left_dist, right_dist);
     bool min_is_left = (min_dist == left_dist);
 
     Point inside_mid[size_];
+    vector<int> inside_ind;
     Point midpoint = pts[middle];
     int index = 0;
     for (int i = l; i <= r; i++) {
-        if (abs(pts[i].x - midpoint.x) < min_dist) inside_mid[index++] = pts[i];
+        if (abs(pts[i].x - midpoint.x) < min_dist) {
+            inside_mid[index++] = pts[i];
+            inside_ind.push_back(i);
+        }
     }
-    vector<int> inside = brute_force(inside_mid, index);
+    vector<int> inside_fake = brute_force(0, index-1, inside_mid);
+    vector<int> inside {inside_ind.at(inside_fake.at(0)), inside_ind.at(inside_fake.at(1))};
     double dist_inside = dist(pts[inside.at(0)], pts[inside.at(1)]);
     // return smallest distance
     if (dist_inside < min_dist) return inside;
@@ -124,7 +127,7 @@ vector<int> merge_find() {
 
 
 int main() {
-    srand(time(nullptr)); // CHANGE BACK to time(nullptr)  !!!!!!!!!!
+    srand(time(nullptr));
 
     // white background
     for (auto &i : ppm) {
