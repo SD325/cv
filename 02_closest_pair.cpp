@@ -9,7 +9,7 @@
 #include <vector>
 
 #define N 200 // resolution of ppm file
-#define size 40 // number of points
+#define num_pts 400 // number of points
 
 using namespace std;
 
@@ -51,7 +51,7 @@ typedef struct Color {
 } col;
 
 // coordinates of vertices are doubles
-static Point pts[size];
+static Point pts[num_pts];
 static col ppm[N][N];
 
 double random() {
@@ -59,7 +59,7 @@ double random() {
 }
 
 double dist(Point p1, Point p2) {
-    return sqrt((p1.x - p1.y)*(p1.x - p1.y) + (p2.x - p2.y)*(p2.x - p2.y));
+    return sqrt((p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y)*(p1.y - p2.y));
 }
 
 void drawpt(int x, int y, int r, int g, int b) {
@@ -87,54 +87,75 @@ vector<int> brute_force(int l, int r, Point p[]) {
 }
 
 
-vector<int> merge_helper(int l, int r, int size_) {
-    if (size_ <= 3) {
-        return brute_force(l, r, pts);
-    }
-    int middle = size_/2;
-    vector<int> left_pts = merge_helper(l, middle-1, middle-l);
-    vector<int> right_pts = merge_helper(middle, r, r-middle+1);
-    double left_dist = dist(pts[left_pts.at(0)], pts[left_pts.at(1)]);
-    double right_dist = dist(pts[right_pts.at(0)], pts[right_pts.at(1)]);
+vector<int> merge_helper(vector<int> curr, int len) {
+   if (len <= 3) {
+       double min_dist = LONG_MAX;
+       double this_dist = 0;
+       vector<int> minInd(2);
+       for (int i = 0; i < len; i++) {
+           for (int j = i+1; j < len; j++) {
+               this_dist = dist(pts[curr.at(i)], pts[curr.at(j)]);
+               if (this_dist < min_dist) {
+                   minInd.at(0) = curr.at(i);
+                   minInd.at(1) = curr.at(j);
+               }
+           }
+       }
+       return minInd;
+   }
+   else {
+       int mid = len/2;
+       vector<int> left;
+       vector<int> right;
+       for (int i = 0; i < mid; i++) left.push_back(curr.at(i));
+       for (int i = mid; i < len; i++) right.push_back(curr.at(i));
+       vector<int> left_min = merge_helper(left, left.size());
+       vector<int> right_min = merge_helper(right, right.size());
+       double left_dist = dist(pts[left_min.at(0)], pts[left_min.at(1)]);
+       double right_dist = dist(pts[right_min.at(0)], pts[right_min.at(1)]);
+       double min_dist;
+       vector<int> min_ind;
+       if (left_dist < right_dist) {
+           min_dist = left_dist;
+           min_ind.push_back(left_min.at(0));
+           min_ind.push_back(left_min.at(1));
+       }
+       else {
+           min_dist = right_dist;
+           min_ind.push_back(right_min.at(0));
+           min_ind.push_back(right_min.at(1));
+       }
 
-    vector<int> min_ind;
-    double min_dist;
-    if (left_dist < right_dist) {
-        min_dist = left_dist;
-        min_ind.push_back(left_pts.at(0));
-        min_ind.push_back(left_pts.at(1));
-    }
-    else {
-        min_dist = right_dist;
-        min_ind.push_back(right_pts.at(0));
-        min_ind.push_back(right_pts.at(1));
-    }
-    vector<Point> inside;
-    double mid_x = (pts[middle-1].x + pts[middle].x)/2.0;
-    for (int i = l; i <= r; i++) {
-        if (abs(pts[i].x - mid_x) < min_dist) {
-            inside.push_back(pts[i]);
-        }
-    }
+       double mid_x = (pts[curr.at(mid)].x + pts[curr.at(mid+1)].x) / 2.0;
+       //double mid_x = pts[curr.at(mid)].x;
+       vector<int> inside_strip;
+       for (int i = 0; i < len; i++) {
+           if (abs(pts[curr.at(i)].x - mid_x) < min_dist) {
+               inside_strip.push_back(curr.at(i));
+           }
+       }
 
-    double thisdist;
-    for (int i = l; i <= r; i++) {
-        for (int j = i+1; j <=r; j++) {
-            thisdist = dist(inside.at(i), inside.at(j));
-            if (thisdist < min_dist) {
-                min_dist = thisdist;
-                min_ind.at(0) = i;
-                min_ind.at(1) = j;
-            }
-        }
-    }
-    return min_ind;
+       double this_dist = 0;
+       for (int i = 0; i < len; i++) {
+           for (int j = i+1; j < len; j++) {
+               this_dist = dist(pts[curr.at(i)], pts[curr.at(j)]);
+               if (this_dist < min_dist) {
+                   min_dist = this_dist;
+                   min_ind.at(0) = curr.at(i);
+                   min_ind.at(1) = curr.at(j);
+               }
+           }
+       }
+       return min_ind;
+   }
 }
 
 
 vector<int> merge_find() {
-    sort(pts, pts+size);
-    return merge_helper(0, size-1, size);
+    sort(pts, pts+num_pts);
+    vector<int> temp;
+    for (int i = 0; i < num_pts; i++) temp.push_back(i);
+    return merge_helper(temp, num_pts);
 }
 
 
