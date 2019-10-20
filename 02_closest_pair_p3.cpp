@@ -9,7 +9,7 @@
 #include <vector>
 
 #define N 800 // resolution of ppm file
-#define num_pts 400 // number of points
+#define num_pts 10000 // number of points
 
 using namespace std;
 
@@ -103,21 +103,40 @@ vector<int> closest_helper(vector<int> x_sorted, vector<int> y_sorted, int len) 
         vector<int> y_right;
         for (int i = 0; i < mid; i++) {
             x_left.push_back(x_sorted.at(i));
+            if (i >= y_sorted.size()) continue;
             if (y_order[y_sorted.at(i)].x < mid_x.x) y_left.push_back(y_sorted.at(i));
             else y_right.push_back(y_sorted.at(i));
         }
         for (int i = mid; i < len; i++) {
             x_right.push_back(x_sorted.at(i));
-            if (y_order[y_sorted.at(i)].x < mid_x.x) y_left.push_back(y_sorted.at(i));
-            else y_right.push_back(y_sorted.at(i));
+            if (i >= y_sorted.size()) continue;
+            if (y_order[y_sorted.at(i)].x < mid_x.x) {
+                y_left.push_back(y_sorted.at(i));
+            }
+            else {
+                y_right.push_back(y_sorted.at(i));
+            }
         }
+
         vector<int> left_min = closest_helper(x_left, y_left, x_left.size());
         vector<int> right_min = closest_helper(x_right, y_right, x_right.size());
         double left_dist = dist(pts[left_min.at(0)], pts[left_min.at(1)]);
         double right_dist = dist(pts[right_min.at(0)], pts[right_min.at(1)]);
         double min_dist;
         vector<int> min_ind;
-        if (left_dist < right_dist) {
+
+        // if the points are the same, then don't include
+        if (left_dist == 0) {
+            min_dist = right_dist;
+            min_ind.push_back(right_min.at(0));
+            min_ind.push_back(right_min.at(1));
+        }
+        else if (right_dist == 0) {
+            min_dist = left_dist;
+            min_ind.push_back(left_min.at(0));
+            min_ind.push_back(left_min.at(1));
+        }
+        else if (left_dist < right_dist) {
             min_dist = left_dist;
             min_ind.push_back(left_min.at(0));
             min_ind.push_back(left_min.at(1));
@@ -130,11 +149,15 @@ vector<int> closest_helper(vector<int> x_sorted, vector<int> y_sorted, int len) 
 
         vector<int> inside_strip;
         for (int i = 0; i < len; i++) {
+            if (i >= y_sorted.size()) break;
             if (abs(y_order[y_sorted.at(i)].x - mid_x.x) < min_dist) {
                 inside_strip.push_back(y_sorted.at(i));
             }
         }
-        vector<int> min_ind_in_strip(2);
+
+        vector<int> min_ind_in_strip;
+        min_ind_in_strip.push_back(-1);
+        min_ind_in_strip.push_back(-2); // temp values
         double min_dist_in_strip = LONG_MAX;
         double this_dist = 0;
         for (int i = 0; i < (int) inside_strip.size(); i++) {
@@ -147,6 +170,7 @@ vector<int> closest_helper(vector<int> x_sorted, vector<int> y_sorted, int len) 
                 }
             }
         }
+
         if (min_dist_in_strip < min_dist) {
             // convert y_sorted index to pts index
             Point py0 = y_order[min_ind_in_strip.at(0)];
@@ -184,7 +208,7 @@ vector<int> closest_find() {
 
 int main() {
     srand(time(nullptr));
-//    srand(5);
+    //srand(24512); with n=200 and #points = 100 gives error
     // white background
     for (auto &i : ppm) {
         for (auto &j : i) {
