@@ -98,6 +98,7 @@ vector<int> merge_helper(vector<int> curr, int len) {
                if (this_dist < min_dist) {
                    minInd.at(0) = curr.at(i);
                    minInd.at(1) = curr.at(j);
+                   min_dist = this_dist;
                }
            }
        }
