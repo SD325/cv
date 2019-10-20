@@ -142,8 +142,8 @@ vector<int> closest_helper(Point sortedX[], Point sortedY[], int len) {
         }
         else {
             min_dist = right_dist;
-            min_ind.push_back(right_min.at(0));
-            min_ind.push_back(right_min.at(1));
+            min_ind.push_back(right_min.at(0)+mid);
+            min_ind.push_back(right_min.at(1)+mid);
         }
 
         //double mid_x = (pts[curr.at(mid)].x + pts[curr.at(mid+1)].x) / 2.0;
