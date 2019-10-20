@@ -9,7 +9,7 @@
 #include <vector>
 
 #define N 400 // resolution of ppm file
-#define num_pts 400 // number of points
+#define num_pts 20 // number of points
 
 using namespace std;
 
@@ -137,13 +137,13 @@ vector<int> merge_helper(vector<int> curr, int len) {
        }
 
        double this_dist = 0;
-       for (int i = 0; i < len; i++) {
-           for (int j = i+1; j < len; j++) {
-               this_dist = dist(pts[curr.at(i)], pts[curr.at(j)]);
+       for (int i = 0; i < inside_strip.size(); i++) {
+           for (int j = i+1; j < inside_strip.size(); j++) {
+               this_dist = dist(pts[inside_strip.at(i)], pts[inside_strip.at(j)]);
                if (this_dist < min_dist) {
                    min_dist = this_dist;
-                   min_ind.at(0) = curr.at(i);
-                   min_ind.at(1) = curr.at(j);
+                   min_ind.at(0) = inside_strip.at(i);
+                   min_ind.at(1) = inside_strip.at(j);
                }
            }
        }
