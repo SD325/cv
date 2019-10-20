@@ -8,12 +8,12 @@
 #include <algorithm>
 #include <vector>
 
-#define N 200 // resolution of ppm file
-#define num_pts 4 // number of points
+#define N 800 // resolution of ppm file
+#define num_pts 400 // number of points
 
 using namespace std;
 
-static bool y_sorting = false;
+bool y_sorting = false;
 class Point {
 public:
     double x;
@@ -54,6 +54,7 @@ typedef struct Color {
 
 // coordinates of vertices are doubles
 static Point pts[num_pts];
+static Point y_order[num_pts];
 static col ppm[N][N];
 
 double random() {
@@ -71,16 +72,16 @@ void drawpt(int x, int y, int r, int g, int b) {
     ppm[x][y].b = b;
 }
 
-vector<int> brute_force(Point x_sorted[], int len) {
+vector<int> brute_force(vector<int> x_sorted, int len) {
     double min_dist = LONG_MAX;
     double this_dist = 0;
     vector<int> minInd(2);
     for (int i = 0; i < len; i++) {
         for (int j = i+1; j < len; j++) {
-            this_dist = dist(x_sorted[i], x_sorted[j]);
+            this_dist = dist(pts[x_sorted.at(i)], pts[x_sorted.at(j)]);
             if (this_dist < min_dist) {
-                minInd.at(0) = i;
-                minInd.at(1) = j;
+                minInd.at(0) = x_sorted.at(i);
+                minInd.at(1) = x_sorted.at(j);
                 min_dist = this_dist;
             }
         }
@@ -89,120 +90,101 @@ vector<int> brute_force(Point x_sorted[], int len) {
 }
 
 
-vector<int> closest_helper(Point x_sorted[], Point y_sorted[], int len) {
+vector<int> closest_helper(vector<int> x_sorted, vector<int> y_sorted, int len) {
     if (len <= 3) {
         return brute_force(x_sorted, len);
     }
-
-    int mid = len/2;
-    Point midpoint = x_sorted[mid];
-    Point x_l[len-mid];
-    Point x_r[mid];
-    int x_l_len = 0;
-    int x_r_len = 0;
-    for (int i = 0; i < len; i++) {
-        if (x_sorted[i].x <= midpoint.x) {
-            x_l[x_l_len++] = x_sorted[i];
-        }
-        else {
-            x_r[x_r_len++] = x_sorted[i];
-        }
-    }
-
-    Point y_l[len-mid];
-    Point y_r[mid];
-    int y_l_len = 0;
-    int y_r_len = 0;
-    for (int i = 0; i < len; i++) {
-        if (y_sorted[i].x <= midpoint.x) {
-            y_l[y_l_len++] = y_sorted[i];
-        }
-        else {
-            y_r[y_r_len++] = y_sorted[i];
-        }
-    }
-
-    if (x_l_len != y_l_len || x_r_len != y_r_len) {
-        cout << "NOT SAME" << endl;
-    }
-    vector<int> left_min = closest_helper(x_l, y_l, x_l_len);
-    vector<int> right_min = closest_helper(x_r, y_r, x_r_len);
-    int offset = mid;
-    if (len % 2 == 1) offset++;
-    double left_dist = dist(x_sorted[left_min.at(0)], x_sorted[left_min.at(1)]);
-    double right_dist = dist(x_sorted[right_min.at(0) + offset], x_sorted[right_min.at(1) + offset]);
-    double min_dist;
-    vector<int> min_ind;
-    if (left_dist < right_dist) {
-        min_dist = left_dist;
-        min_ind.push_back(left_min.at(0));
-        min_ind.push_back(left_min.at(1));
-    }
     else {
-        min_dist = right_dist;
-        min_ind.push_back(right_min.at(0) + offset);
-        min_ind.push_back(right_min.at(1) + offset);
-    }
-
-    Point in_strip_y_sorted[len];
-    int strip_len = 0;
-    for (int i = 0; i < len; i++) {
-        if (abs(y_sorted[i].x - midpoint.x) < min_dist) {
-            in_strip_y_sorted[strip_len++] = y_sorted[i];
+        int mid = len/2;
+        Point mid_x = pts[x_sorted.at(mid)];
+        vector<int> x_left;
+        vector<int> y_left;
+        vector<int> x_right;
+        vector<int> y_right;
+        for (int i = 0; i < mid; i++) {
+            x_left.push_back(x_sorted.at(i));
+            if (y_order[y_sorted.at(i)].x < mid_x.x) y_left.push_back(y_sorted.at(i));
+            else y_right.push_back(y_sorted.at(i));
         }
-    }
-
-
-    // minimum inside strip
-    double min_dist_in_strip = LONG_MAX;
-    double this_dist = 0;
-    Point minPoints[2];
-    for (int i = 0; i < strip_len; i++) {
-        for (int j = i+1; j < strip_len && j < i+8; j++) {
-            this_dist = dist(in_strip_y_sorted[i], in_strip_y_sorted[j]);
-            if (this_dist < min_dist_in_strip) {
-                minPoints[0] = in_strip_y_sorted[i];
-                minPoints[1] = in_strip_y_sorted[j];
-                min_dist_in_strip = this_dist;
-            }
+        for (int i = mid; i < len; i++) {
+            x_right.push_back(x_sorted.at(i));
+            if (y_order[y_sorted.at(i)].x < mid_x.x) y_left.push_back(y_sorted.at(i));
+            else y_right.push_back(y_sorted.at(i));
         }
-    }
+        vector<int> left_min = closest_helper(x_left, y_left, x_left.size());
+        vector<int> right_min = closest_helper(x_right, y_right, x_right.size());
+        double left_dist = dist(pts[left_min.at(0)], pts[left_min.at(1)]);
+        double right_dist = dist(pts[right_min.at(0)], pts[right_min.at(1)]);
+        double min_dist;
+        vector<int> min_ind;
+        if (left_dist < right_dist) {
+            min_dist = left_dist;
+            min_ind.push_back(left_min.at(0));
+            min_ind.push_back(left_min.at(1));
+        }
+        else {
+            min_dist = right_dist;
+            min_ind.push_back(right_min.at(0));
+            min_ind.push_back(right_min.at(1));
+        }
 
-    if (min_dist_in_strip < min_dist) {
+        vector<int> inside_strip;
         for (int i = 0; i < len; i++) {
-            if (minPoints[0].x == x_sorted[i].x && minPoints[0].y == x_sorted[i].y) {
-                min_ind.at(0) = i;
-                break;
+            if (abs(y_order[y_sorted.at(i)].x - mid_x.x) < min_dist) {
+                inside_strip.push_back(y_sorted.at(i));
             }
         }
-        for (int i = 0; i < len; i++) {
-            if (minPoints[1].x == x_sorted[i].x && minPoints[1].y == x_sorted[i].y) {
-                min_ind.at(1) = i;
-                break;
+        vector<int> min_ind_in_strip(2);
+        double min_dist_in_strip = LONG_MAX;
+        double this_dist = 0;
+        for (int i = 0; i < (int) inside_strip.size(); i++) {
+            for (int j = i+1; j < (int) inside_strip.size() && j < i+8; j++) {
+                this_dist = dist(y_order[inside_strip.at(i)], y_order[inside_strip.at(j)]);
+                if (this_dist < min_dist_in_strip) {
+                    min_dist_in_strip = this_dist;
+                    min_ind_in_strip.at(0) = inside_strip.at(i);
+                    min_ind_in_strip.at(1) = inside_strip.at(j);
+                }
             }
         }
+        if (min_dist_in_strip < min_dist) {
+            // convert y_sorted index to pts index
+            Point py0 = y_order[min_ind_in_strip.at(0)];
+            Point py1 = y_order[min_ind_in_strip.at(1)];
+            for (int i = 0; i < len; i++) {
+                if (py0.x == pts[x_sorted.at(i)].x && py0.y == pts[x_sorted.at(i)].y) {
+                    min_ind.at(0) = x_sorted.at(i);
+                    break;
+                }
+            }
+            for (int i = 0; i < len; i++) {
+                if (py1.x == pts[x_sorted.at(i)].x && py1.y == pts[x_sorted.at(i)].y) {
+                    min_ind.at(1) = x_sorted.at(i);
+                    break;
+                }
+            }
+        }
+        return min_ind;
     }
-    return min_ind;
 }
 
 
-vector<int> closest() {
-    Point x_sorted[num_pts];
-    Point y_sorted[num_pts];
+vector<int> closest_find() {
     for (int i = 0; i < num_pts; i++) {
-        x_sorted[i] = pts[i];
-        y_sorted[i] = pts[i];
+        y_order[i] = pts[i];
     }
-    sort(x_sorted, x_sorted+num_pts);
+    sort(pts, pts+num_pts);
     y_sorting = true;
-    sort(y_sorted, y_sorted+num_pts);
-    return closest_helper(x_sorted, y_sorted, num_pts);
+    sort(y_order, y_order + num_pts);
+    vector<int> temp;
+    for (int i = 0; i < num_pts; i++) temp.push_back(i);
+    return closest_helper(temp, temp, num_pts);
 }
 
 
 int main() {
     srand(time(nullptr));
-
+//    srand(5);
     // white background
     for (auto &i : ppm) {
         for (auto &j : i) {
@@ -218,7 +200,7 @@ int main() {
         drawpt(roundedX, roundedY, 0, 0, 0);
     }
 
-    vector<int> minInd = closest();
+    vector<int> minInd = closest_find();
     drawpt((int) (N * pts[minInd.at(0)].x), (int) (N * pts[minInd.at(0)].y), 1, 0, 0);
     drawpt((int) (N * pts[minInd.at(1)].x), (int) (N * pts[minInd.at(1)].y), 1, 0, 0);
 
