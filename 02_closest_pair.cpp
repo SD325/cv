@@ -8,8 +8,8 @@
 #include <algorithm>
 #include <vector>
 
-#define N 400 // resolution of ppm file
-#define num_pts 20 // number of points
+#define N 800 // resolution of ppm file
+#define num_pts 1000 // number of points
 
 using namespace std;
 
@@ -69,17 +69,17 @@ void drawpt(int x, int y, int r, int g, int b) {
     ppm[x][y].b = b;
 }
 
-vector<int> brute_force(int l, int r, Point p[]) {
+vector<int> brute_force(vector<int> curr, int len) {
     double min_dist = LONG_MAX;
-    double old;
+    double this_dist = 0;
     vector<int> minInd(2);
-    for (int i = l; i <= r; i++) {
-        for (int j = i+1; j <=r; j++) {
-            old = min_dist;
-            min_dist = min(min_dist, dist(p[i], p[j]));
-            if (min_dist < old) {
-                minInd.at(0) = i;
-                minInd.at(1) = j;
+    for (int i = 0; i < len; i++) {
+        for (int j = i+1; j < len; j++) {
+            this_dist = dist(pts[curr.at(i)], pts[curr.at(j)]);
+            if (this_dist < min_dist) {
+                minInd.at(0) = curr.at(i);
+                minInd.at(1) = curr.at(j);
+                min_dist = this_dist;
             }
         }
     }
@@ -89,20 +89,7 @@ vector<int> brute_force(int l, int r, Point p[]) {
 
 vector<int> merge_helper(vector<int> curr, int len) {
    if (len <= 3) {
-       double min_dist = LONG_MAX;
-       double this_dist = 0;
-       vector<int> minInd(2);
-       for (int i = 0; i < len; i++) {
-           for (int j = i+1; j < len; j++) {
-               this_dist = dist(pts[curr.at(i)], pts[curr.at(j)]);
-               if (this_dist < min_dist) {
-                   minInd.at(0) = curr.at(i);
-                   minInd.at(1) = curr.at(j);
-                   min_dist = this_dist;
-               }
-           }
-       }
-       return minInd;
+       return brute_force(curr, len);
    }
    else {
        int mid = len/2;
@@ -137,8 +124,8 @@ vector<int> merge_helper(vector<int> curr, int len) {
        }
 
        double this_dist = 0;
-       for (int i = 0; i < inside_strip.size(); i++) {
-           for (int j = i+1; j < inside_strip.size(); j++) {
+       for (int i = 0; i < (int) inside_strip.size(); i++) {
+           for (int j = i+1; j < (int) inside_strip.size(); j++) {
                this_dist = dist(pts[inside_strip.at(i)], pts[inside_strip.at(j)]);
                if (this_dist < min_dist) {
                    min_dist = this_dist;
