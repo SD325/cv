@@ -9,8 +9,8 @@
 #include <vector>
 #include <chrono>
 
-#define N 800 // resolution of ppm file
-#define num_pts 100000 // number of points
+#define N 200 // resolution of ppm file
+#define num_pts 10 // number of points
 
 using namespace std;
 
@@ -210,43 +210,52 @@ vector<int> closest_find() {
 int main() {
     srand(time(nullptr));
     // white background
-//    for (auto &i : ppm) {
-//        for (auto &j : i) {
-//            j.r = 1;
-//            j.g = 1;
-//            j.b = 1;
-//        }
-//    }
+    for (auto &i : ppm) {
+        for (auto &j : i) {
+            j.r = 1;
+            j.g = 1;
+            j.b = 1;
+        }
+    }
     auto start = chrono::high_resolution_clock::now();
-    for (int trials = 0; trials < 100; trials++) {
+    for (int trials = 0; trials < 1; trials++) {
         for (auto &pt : pts) {
             pt = Point(random(), random());
             int roundedX = (int) (N * pt.x);
             int roundedY = (int) (N * pt.y);
             drawpt(roundedX, roundedY, 0, 0, 0);
         }
-
-
+        vector<int> temp;
+        for (int i = 0; i < num_pts; i++) temp.push_back(i);
+        vector<int> brute = brute_force(temp, num_pts);
         vector<int> minInd = closest_find();
-//    drawpt((int) (N * pts[minInd.at(0)].x), (int) (N * pts[minInd.at(0)].y), 1, 0, 0);
-//    drawpt((int) (N * pts[minInd.at(1)].x), (int) (N * pts[minInd.at(1)].y), 1, 0, 0);
+        cout << pts[brute.at(0)].x << " " << pts[brute.at(0)].y << endl;
+        cout << pts[minInd.at(0)].x << " " << pts[minInd.at(0)].y << endl;
+        cout << pts[brute.at(1)].x << " " << pts[brute.at(1)].y << endl;
+        cout << pts[minInd.at(1)].x << " " << pts[minInd.at(1)].y << endl;
+        cout << "----------" << endl;
+        drawpt((int) (N * pts[brute.at(0)].x), (int) (N * pts[brute.at(0)].y), 0, 1, 0);
+        drawpt((int) (N * pts[brute.at(1)].x), (int) (N * pts[brute.at(1)].y), 0, 1, 0);
+        drawpt((int) (N * pts[minInd.at(0)].x), (int) (N * pts[minInd.at(0)].y), 1, 0, 0);
+        drawpt((int) (N * pts[minInd.at(1)].x), (int) (N * pts[minInd.at(1)].y), 1, 0, 0);
     }
     auto stop = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
-    cout << duration.count() << endl;
+    //cout << duration.count() << endl;
     cout << duration.count()/1e6 << endl;
+    cout << "average: " << duration.count()/1e8 << endl;
 
 
 //    // WRITE TO PPM
-//    ofstream image("02_closest_pair.ppm");
-//    image << "P3 " << N << " " << N << " 1" << endl;
-//
-//    for (auto &i : ppm) {
-//        for (auto &j : i) {
-//            image << j.r << " " << j.g << " " << j.b << " ";
-//        }
-//        image << endl;
-//    }
-//    image.close();
+    ofstream image("02_closest_pair.ppm");
+    image << "P3 " << N << " " << N << " 1" << endl;
+
+    for (auto &i : ppm) {
+        for (auto &j : i) {
+            image << j.r << " " << j.g << " " << j.b << " ";
+        }
+        image << endl;
+    }
+    image.close();
     return 0;
 }
