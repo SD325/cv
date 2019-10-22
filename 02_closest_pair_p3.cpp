@@ -209,6 +209,8 @@ vector<int> closest_find() {
 
 int main() {
     srand(time(nullptr));
+    vector<int> temp;
+    for (int i = 0; i < num_pts; i++) temp.push_back(i);
     // white background
     for (auto &i : ppm) {
         for (auto &j : i) {
@@ -225,19 +227,19 @@ int main() {
             int roundedY = (int) (N * pt.y);
             drawpt(roundedX, roundedY, 0, 0, 0);
         }
-        vector<int> temp;
-        for (int i = 0; i < num_pts; i++) temp.push_back(i);
+
         vector<int> brute = brute_force(temp, num_pts);
         vector<int> minInd = closest_find();
-        cout << pts[brute.at(0)].x << " " << pts[brute.at(0)].y << endl;
-        cout << pts[minInd.at(0)].x << " " << pts[minInd.at(0)].y << endl;
-        cout << pts[brute.at(1)].x << " " << pts[brute.at(1)].y << endl;
-        cout << pts[minInd.at(1)].x << " " << pts[minInd.at(1)].y << endl;
-        cout << "----------" << endl;
-        drawpt((int) (N * pts[brute.at(0)].x), (int) (N * pts[brute.at(0)].y), 0, 1, 0);
-        drawpt((int) (N * pts[brute.at(1)].x), (int) (N * pts[brute.at(1)].y), 0, 1, 0);
-        drawpt((int) (N * pts[minInd.at(0)].x), (int) (N * pts[minInd.at(0)].y), 1, 0, 0);
-        drawpt((int) (N * pts[minInd.at(1)].x), (int) (N * pts[minInd.at(1)].y), 1, 0, 0);
+//        cout << pts[brute.at(0)].x << " " << pts[brute.at(0)].y << endl;
+//        cout << pts[brute.at(1)].x << " " << pts[brute.at(1)].y << endl;
+//        drawpt((int) (N * pts[brute.at(0)].x), (int) (N * pts[brute.at(0)].y), 0, 1, 0);
+//        drawpt((int) (N * pts[brute.at(1)].x), (int) (N * pts[brute.at(1)].y), 0, 1, 0);
+//        vector<int> minInd = closest_find();
+//        cout << pts[minInd.at(0)].x << " " << pts[minInd.at(0)].y << endl;
+//        cout << pts[minInd.at(1)].x << " " << pts[minInd.at(1)].y << endl;
+//        cout << "----------" << endl;
+//        drawpt((int) (N * pts[minInd.at(0)].x), (int) (N * pts[minInd.at(0)].y), 1, 0, 0);
+//        drawpt((int) (N * pts[minInd.at(1)].x), (int) (N * pts[minInd.at(1)].y), 1, 0, 0);
     }
     auto stop = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
