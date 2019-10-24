@@ -10,7 +10,8 @@
 #include <chrono>
 
 #define N 800 // resolution of ppm file
-#define num_pts 500000 // number of points
+#define num_pts 1000 // number of points
+#define num_trials 1
 
 using namespace std;
 
@@ -246,7 +247,13 @@ vector<int> merge_helper(vector<int> curr, int len) {
 }
 
 
-vector<int> closest_find(vector<int> temp) {
+vector<int> merge_find(const vector<int>& temp) {
+    sort(pts, pts+num_pts);
+    return merge_helper(temp, num_pts);
+}
+
+
+vector<int> closest_find(const vector<int>& temp) {
     for (int i = 0; i < num_pts; i++) {
         y_order[i] = pts[i];
     }
@@ -270,7 +277,7 @@ int main() {
 //        }
 //    }
     auto start = chrono::high_resolution_clock::now();
-    for (int trials = 0; trials < 1; trials++) {
+    for (int trials = 0; trials < num_trials; trials++) {
         for (auto &pt : pts) {
             pt = Point(random(), random());
 //            int roundedX = (int) (N * pt.x);
@@ -278,26 +285,29 @@ int main() {
 //            drawpt(roundedX, roundedY, 0, 0, 0);
         }
 
-        vector<int> minInd = brute_force(temp, num_pts);
-        //vector<int> minInd = closest_find(temp);
-        //vector<int> minInd = merge_helper(temp, num_pts);
+        vector<int> brute_force_results = brute_force(temp, num_pts);
+        cout << "Brute Force Results:" << endl;
+        // may print out points in different order than recursive algorithms
+        // because points are not sorted
+        cout << pts[brute_force_results.at(0)].x << " " << pts[brute_force_results.at(0)].y << endl;
+        cout << pts[brute_force_results.at(1)].x << " " << pts[brute_force_results.at(1)].y << endl << "-----" << endl;
+        vector<int> recursive_results = merge_find(temp);
+        cout << "Recursive Algorithm Results:" << endl;
+        cout << pts[recursive_results.at(0)].x << " " << pts[recursive_results.at(0)].y << endl;
+        cout << pts[recursive_results.at(1)].x << " " << pts[recursive_results.at(1)].y << endl<< "-----" << endl;
+        vector<int> fast_recursive_results = closest_find(temp);
+        cout << "Fast Recursive Algorithm Results:" << endl;
+        cout << pts[fast_recursive_results.at(0)].x << " " << pts[fast_recursive_results.at(0)].y << endl;
+        cout << pts[fast_recursive_results.at(1)].x << " " << pts[fast_recursive_results.at(1)].y << endl << "-----" << endl;
 
-//        cout << pts[brute.at(0)].x << " " << pts[brute.at(0)].y << endl;
-//        cout << pts[brute.at(1)].x << " " << pts[brute.at(1)].y << endl;
-//        drawpt((int) (N * pts[brute.at(0)].x), (int) (N * pts[brute.at(0)].y), 0, 1, 0);
-//        drawpt((int) (N * pts[brute.at(1)].x), (int) (N * pts[brute.at(1)].y), 0, 1, 0);
-//        vector<int> minInd = closest_find();
-//        cout << pts[minInd.at(0)].x << " " << pts[minInd.at(0)].y << endl;
-//        cout << pts[minInd.at(1)].x << " " << pts[minInd.at(1)].y << endl;
-//        cout << "----------" << endl;
 //        drawpt((int) (N * pts[minInd.at(0)].x), (int) (N * pts[minInd.at(0)].y), 1, 0, 0);
 //        drawpt((int) (N * pts[minInd.at(1)].x), (int) (N * pts[minInd.at(1)].y), 1, 0, 0);
     }
     auto stop = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
-    //cout << duration.count() << endl;
-    cout << duration.count()/1e6 << endl;
-    cout << "average: " << duration.count()/1e8 << endl;
+    cout << "total time: " << duration.count()/1e6 << endl;
+    cout << "average: " << duration.count()/(num_trials*1e6) << endl; // divide by 100
+    cout << "--------------------" << endl;
 
 
 //    // WRITE TO PPM
