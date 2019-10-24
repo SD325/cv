@@ -59,7 +59,7 @@ static Point pts[num_pts];
 static Point y_order[num_pts];
 static col ppm[N][N];
 
-double random() {
+double random_double() {
     return (double) rand() / RAND_MAX;
 }
 
@@ -279,7 +279,7 @@ int main() {
 
     //for (int trials = 0; trials < num_trials; trials++) {
         for (auto &pt : pts) {
-            pt = Point(random(), random());
+            pt = Point(random_double(), random_double());
 //            int roundedX = (int) (N * pt.x);
 //            int roundedY = (int) (N * pt.y);
 //            drawpt(roundedX, roundedY, 0, 0, 0);
