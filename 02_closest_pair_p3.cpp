@@ -75,7 +75,7 @@ void drawpt(int x, int y, int r, int g, int b) {
 }
 
 vector<int> brute_force(vector<int> x_sorted, int len) {
-    double min_dist = LONG_MAX;
+    double min_dist = 2;
     double this_dist = 0;
     vector<int> minInd(2);
     for (int i = 0; i < len; i++) {
@@ -160,7 +160,7 @@ vector<int> closest_helper(vector<int> x_sorted, vector<int> y_sorted, int len) 
         vector<int> min_ind_in_strip;
         min_ind_in_strip.push_back(-1);
         min_ind_in_strip.push_back(-2); // temp values
-        double min_dist_in_strip = LONG_MAX;
+        double min_dist_in_strip = 2;
         double this_dist = 0;
         for (int i = 0; i < (int) inside_strip.size(); i++) {
             for (int j = i+1; j < (int) inside_strip.size() && j < i+8; j++) {
