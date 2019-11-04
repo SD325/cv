@@ -12,7 +12,7 @@
 
 
 #define N 800 // resolution of ppm file
-#define num_pts 1000 // number of points
+#define num_pts 5 // number of points
 //#define num_trials 1
 
 using namespace std;
@@ -66,7 +66,7 @@ double random_double() {
 }
 
 double dist(Point p1, Point p2) {
-    return ((p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y)*(p1.y - p2.y));
+    return sqrt((p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y)*(p1.y - p2.y));
 }
 
 void drawpt(int x, int y, int r, int g, int b) {
@@ -360,7 +360,8 @@ int main() {
 
     random_shuffle(pts, pts+num_pts);
     vector<int> minInd = rand_finder(temp);
-
+    cout << pts[minInd.at(0)].x << " " << pts[minInd.at(0)].y << endl;
+    cout << pts[minInd.at(1)].x << " " << pts[minInd.at(1)].y << endl;
 
 
 //        drawpt((int) (N * pts[minInd.at(0)].x), (int) (N * pts[minInd.at(0)].y), 1, 0, 0);
