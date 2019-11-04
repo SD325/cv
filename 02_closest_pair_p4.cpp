@@ -314,7 +314,7 @@ vector<int> rand_finder(vector<int> ind) {
         }
 
     }
-
+    return result;
 
 }
 
@@ -359,7 +359,7 @@ int main() {
 
 
     random_shuffle(pts, pts+num_pts);
-    rand_finder(temp);
+    vector<int> minInd = rand_finder(temp);
 
 
 
