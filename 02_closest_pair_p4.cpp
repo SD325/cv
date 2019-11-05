@@ -12,7 +12,7 @@
 
 
 #define N 800 // resolution of ppm file
-#define num_pts 5 // number of points
+#define num_pts 1000 // number of points
 //#define num_trials 1
 
 using namespace std;
@@ -266,56 +266,58 @@ vector<int> closest_find(const vector<int>& temp) {
 }
 
 
-unordered_map<int, int> make_dictionary(vector<int> ind, int num_squares, double side) {
+unordered_map<int, int> make_dictionary(int num_squares, double side) {
     unordered_map<int, int> result = {};
-    for (int i : ind) {
-        int subsquare = (int) ((pts[i].x + num_squares*pts[i].y)/side);
+    for (int i = 0; i < num_pts; i++) {
+        int x = (int) (pts[i].x/side);
+        int y = (int) (pts[i].y/side);
+        int subsquare = x + num_squares*y;
         result[subsquare] = i;
     }
     return result;
 }
 
 
-vector<int> rand_finder(vector<int> ind) {
+vector<int> rand_finder() {
     vector<int> result;
     result.push_back(0); result.push_back(1);
-    double min_dist = dist(pts[ind.at(0)], pts[ind.at(1)]);
+    double min_dist = dist(pts[0], pts[1]);
     int num_squares = (int)(2.0 / (min_dist)) + 1;
     double side = min_dist / 2.0;
     unordered_map<int, int> dict;
-    dict = make_dictionary(ind, num_squares, side);
-    for (int i : ind) {
+    dict = make_dictionary(num_squares, side);
+    for (int i = 0; i < num_pts; i++) {
         int x = (int) (pts[i].x/side);
         int y = (int) (pts[i].y/side);
         for (int dx = -2; dx < 3; dx++) {
             for (int dy = -2; dy < 3; dy++) {
                 int new_x = x+dx; int new_y = y+dy;
                 if (new_x < 0 || new_y < 0 || new_x >= num_squares || new_y >= num_squares) continue;
-                int sub_ind = y*num_squares + x;
+                int sub_ind = new_x + new_y*num_squares;
+                if (dict[sub_ind] == i) continue;
                 double this_dist = dist(pts[i], pts[dict[sub_ind]]);
                 if (this_dist < min_dist) {
                     min_dist = this_dist;
                     result.at(0) = i;
-                    result.at(1) = dict[ind.at(sub_ind)];
+                    result.at(1) = dict[sub_ind];
                     num_squares = (int) (2.0 / (min_dist)) + 1;
                     side = min_dist / 2.0;
                     dict.erase(dict.begin(), dict.end());
-                    dict = make_dictionary(ind, num_squares, side);
-                    for (int j : ind) {
+                    dict = make_dictionary(num_squares, side);
+                    for (int j = 0; j < num_pts; j++) {
                         int curr_x = (int) (pts[j].x / side);
                         int curr_y = (int) (pts[j].y / side);
-                        dict[curr_x + curr_y*num_squares] = i;
+                        dict[curr_x + curr_y*num_squares] = j;
                     }
                 }
                 else {
-                     // dict[sub_ind] =
+                     dict[x + num_squares*y] = i;
                 }
             }
         }
 
     }
     return result;
-
 }
 
 
@@ -359,7 +361,7 @@ int main() {
 
 
     random_shuffle(pts, pts+num_pts);
-    vector<int> minInd = rand_finder(temp);
+    vector<int> minInd = rand_finder();
     cout << pts[minInd.at(0)].x << " " << pts[minInd.at(0)].y << endl;
     cout << pts[minInd.at(1)].x << " " << pts[minInd.at(1)].y << endl;
 
