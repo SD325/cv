@@ -12,8 +12,8 @@
 
 
 #define N 800 // resolution of ppm file
-#define num_pts 1000 // number of points
-//#define num_trials 1
+#define num_pts 100 // number of points
+#define num_trials 1
 
 using namespace std;
 
@@ -334,56 +334,42 @@ int main() {
 //        }
 //    }
 
-    //for (int trials = 0; trials < num_trials; trials++) {
-    for (auto &pt : pts) {
-        pt = Point(random_double(), random_double());
-//            int roundedX = (int) (N * pt.x);
-//            int roundedY = (int) (N * pt.y);
-//            drawpt(roundedX, roundedY, 0, 0, 0);
+    auto start = chrono::high_resolution_clock::now();
+    for (int trials = 0; trials < num_trials; trials++) {
+        for (auto &pt : pts) {
+            pt = Point(random_double(), random_double());
+        }
+    //    auto start = chrono::high_resolution_clock::now();
+//        vector<int> brute_force_results = brute_force(temp, num_pts);
+//        cout << pts[brute_force_results.at(0)].x << " " << pts[brute_force_results.at(0)].y << endl;
+//        cout << pts[brute_force_results.at(1)].x << " " << pts[brute_force_results.at(1)].y << endl;
+    //    auto stop = chrono::high_resolution_clock::now();
+    //    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+    //    cout << "Brute Force Time: " << duration.count()/1e6 << endl << "-----" << endl;
+    //
+    //    auto start2 = chrono::high_resolution_clock::now();
+    //    vector<int> recursive_results = merge_find(temp);
+    //    auto stop2 = chrono::high_resolution_clock::now();
+    //    auto duration2 = chrono::duration_cast<chrono::microseconds>(stop2 - start2);
+    //    cout << "Recursive Time: " << duration2.count()/1e6 << endl << "-----" << endl;
+    //
+    //    auto start3 = chrono::high_resolution_clock::now();
+    //    vector<int> fast_recursive_results = closest_find(temp);
+    //    auto stop3 = chrono::high_resolution_clock::now();
+    //    auto duration3 = chrono::duration_cast<chrono::microseconds>(stop3 - start3);
+    //    cout << "Fast Recursive Time: " << duration3.count()/1e6 << endl << "-----" << endl;
+
+
+        random_shuffle(pts, pts+num_pts);
+        vector<int> minInd = rand_finder();
+//        cout << pts[minInd.at(0)].x << " " << pts[minInd.at(0)].y << endl;
+//        cout << pts[minInd.at(1)].x << " " << pts[minInd.at(1)].y << endl;
+        //cout << "Randomized Time: " << duration.count()/1e6 << endl << "-----" << endl;
     }
-//    auto start = chrono::high_resolution_clock::now();
-//    vector<int> brute_force_results = brute_force(temp, num_pts);
-//    auto stop = chrono::high_resolution_clock::now();
-//    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
-//    cout << "Brute Force Time: " << duration.count()/1e6 << endl << "-----" << endl;
-//
-//    auto start2 = chrono::high_resolution_clock::now();
-//    vector<int> recursive_results = merge_find(temp);
-//    auto stop2 = chrono::high_resolution_clock::now();
-//    auto duration2 = chrono::duration_cast<chrono::microseconds>(stop2 - start2);
-//    cout << "Recursive Time: " << duration2.count()/1e6 << endl << "-----" << endl;
-//
-//    auto start3 = chrono::high_resolution_clock::now();
-//    vector<int> fast_recursive_results = closest_find(temp);
-//    auto stop3 = chrono::high_resolution_clock::now();
-//    auto duration3 = chrono::duration_cast<chrono::microseconds>(stop3 - start3);
-//    cout << "Fast Recursive Time: " << duration3.count()/1e6 << endl << "-----" << endl;
-
-
-    random_shuffle(pts, pts+num_pts);
-    vector<int> minInd = rand_finder();
-    cout << pts[minInd.at(0)].x << " " << pts[minInd.at(0)].y << endl;
-    cout << pts[minInd.at(1)].x << " " << pts[minInd.at(1)].y << endl;
-
-
-//        drawpt((int) (N * pts[minInd.at(0)].x), (int) (N * pts[minInd.at(0)].y), 1, 0, 0);
-//        drawpt((int) (N * pts[minInd.at(1)].x), (int) (N * pts[minInd.at(1)].y), 1, 0, 0);
-    //}
-
-    //cout << "average: " << duration.count()/(num_trials*1e6) << endl; // divide by 100
+    auto stop = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+    cout << "average: " << duration.count()/(num_trials*1e6) << endl; // divide by 100
     //cout << "--------------------" << endl;
 
-
-//    // WRITE TO PPM
-//    ofstream image("02_closest_pair.ppm");
-//    image << "P3 " << N << " " << N << " 1" << endl;
-//
-//    for (auto &i : ppm) {
-//        for (auto &j : i) {
-//            image << j.r << " " << j.g << " " << j.b << " ";
-//        }
-//        image << endl;
-//    }
-//    image.close();
     return 0;
 }
