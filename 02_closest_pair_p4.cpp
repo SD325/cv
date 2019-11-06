@@ -302,7 +302,8 @@ vector<int> rand_finder() {
                     result.at(1) = dict[sub_ind];
                     num_squares = (int) (2.0 / (min_dist)) + 1;
                     side = min_dist / 2.0;
-                    dict.erase(dict.begin(), dict.end());
+                    //dict.erase(dict.begin(), dict.end());
+                    dict.clear();
                     dict = make_dictionary(num_squares, side);
                     for (int j = 0; j < num_pts; j++) {
                         int curr_x = (int) (pts[j].x / side);
