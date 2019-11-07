@@ -16,7 +16,7 @@
 #include <chrono>
 #include <unordered_map>
 
-#define num_pts 100000 // number of points
+#define num_pts 1000000 // number of points
 #define num_trials 1
 
 using namespace std;
@@ -135,57 +135,142 @@ vector<int> rand_finder() {
 }
 
 
+vector<int> closest_helper(vector<int> x_sorted, vector<int> y_sorted, int len) {
+    if (len <= 3) {
+        return brute_force(x_sorted, len);
+    }
+    else {
+        int mid = len/2;
+        Point mid_x = pts[x_sorted.at(mid)];
+        vector<int> x_left;
+        vector<int> y_left;
+        vector<int> x_right;
+        vector<int> y_right;
+        for (int i = 0; i < mid; i++) {
+            x_left.push_back(x_sorted.at(i));
+            if (i >= y_sorted.size()) continue;
+            if (y_order[y_sorted.at(i)].x < mid_x.x) y_left.push_back(y_sorted.at(i));
+            else y_right.push_back(y_sorted.at(i));
+        }
+        for (int i = mid; i < len; i++) {
+            x_right.push_back(x_sorted.at(i));
+            if (i >= y_sorted.size()) continue;
+            if (y_order[y_sorted.at(i)].x < mid_x.x) {
+                y_left.push_back(y_sorted.at(i));
+            }
+            else {
+                y_right.push_back(y_sorted.at(i));
+            }
+        }
+
+        vector<int> left_min = closest_helper(x_left, y_left, x_left.size());
+        vector<int> right_min = closest_helper(x_right, y_right, x_right.size());
+        double left_dist = dist(pts[left_min.at(0)], pts[left_min.at(1)]);
+        double right_dist = dist(pts[right_min.at(0)], pts[right_min.at(1)]);
+        double min_dist;
+        vector<int> min_ind;
+
+        // if the points are the same, then don't include
+        if (left_dist == 0) {
+            min_dist = right_dist;
+            min_ind.push_back(right_min.at(0));
+            min_ind.push_back(right_min.at(1));
+        }
+        else if (right_dist == 0) {
+            min_dist = left_dist;
+            min_ind.push_back(left_min.at(0));
+            min_ind.push_back(left_min.at(1));
+        }
+        else if (left_dist < right_dist) {
+            min_dist = left_dist;
+            min_ind.push_back(left_min.at(0));
+            min_ind.push_back(left_min.at(1));
+        }
+        else {
+            min_dist = right_dist;
+            min_ind.push_back(right_min.at(0));
+            min_ind.push_back(right_min.at(1));
+        }
+
+        vector<int> inside_strip;
+        for (int i = 0; i < len; i++) {
+            if (i >= y_sorted.size()) break;
+            if (abs(y_order[y_sorted.at(i)].x - mid_x.x) < min_dist) {
+                inside_strip.push_back(y_sorted.at(i));
+            }
+        }
+
+        vector<int> min_ind_in_strip;
+        min_ind_in_strip.push_back(-1);
+        min_ind_in_strip.push_back(-2); // temp values
+        double min_dist_in_strip = 2;
+        double this_dist = 0;
+        for (int i = 0; i < (int) inside_strip.size(); i++) {
+            for (int j = i+1; j < (int) inside_strip.size() && j < i+8; j++) {
+                this_dist = dist(y_order[inside_strip.at(i)], y_order[inside_strip.at(j)]);
+                if (this_dist < min_dist_in_strip) {
+                    min_dist_in_strip = this_dist;
+                    min_ind_in_strip.at(0) = inside_strip.at(i);
+                    min_ind_in_strip.at(1) = inside_strip.at(j);
+                }
+            }
+        }
+
+        if (min_dist_in_strip < min_dist) {
+            // convert y_sorted index to pts index
+            Point py0 = y_order[min_ind_in_strip.at(0)];
+            Point py1 = y_order[min_ind_in_strip.at(1)];
+            for (int i = 0; i < len; i++) {
+                if (py0.x == pts[x_sorted.at(i)].x && py0.y == pts[x_sorted.at(i)].y) {
+                    min_ind.at(0) = x_sorted.at(i);
+                    break;
+                }
+            }
+            for (int i = 0; i < len; i++) {
+                if (py1.x == pts[x_sorted.at(i)].x && py1.y == pts[x_sorted.at(i)].y) {
+                    min_ind.at(1) = x_sorted.at(i);
+                    break;
+                }
+            }
+        }
+        return min_ind;
+    }
+}
+
+
+vector<int> closest_find(const vector<int>& temp) {
+    for (int i = 0; i < num_pts; i++) {
+        y_order[i] = pts[i];
+    }
+    sort(pts, pts+num_pts);
+    y_sorting = true;
+    sort(y_order, y_order + num_pts);
+    return closest_helper(temp, temp, num_pts);
+}
+
+
+
 int main() {
     srand(time(nullptr));
     vector<int> temp;
     for (int i = 0; i < num_pts; i++) temp.push_back(i);
-    // white background
-//    for (auto &i : ppm) {
-//        for (auto &j : i) {
-//            j.r = 1;
-//            j.g = 1;
-//            j.b = 1;
-//        }
-//    }
 
-    auto start = chrono::high_resolution_clock::now();
-    for (int trials = 0; trials < num_trials; trials++) {
-        for (auto &pt : pts) {
-            pt = Point(random_double(), random_double());
-        }
-    //    auto start = chrono::high_resolution_clock::now();
-//        vector<int> brute_force_results = brute_force(temp, num_pts);
-//        cout << pts[brute_force_results.at(0)].x << " " << pts[brute_force_results.at(0)].y << endl;
-//        cout << pts[brute_force_results.at(1)].x << " " << pts[brute_force_results.at(1)].y << endl;
-    //    auto stop = chrono::high_resolution_clock::now();
-    //    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
-    //    cout << "Brute Force Time: " << duration.count()/1e6 << endl << "-----" << endl;
-    //
-    //    auto start2 = chrono::high_resolution_clock::now();
-    //    vector<int> recursive_results = merge_find(temp);
-    //    auto stop2 = chrono::high_resolution_clock::now();
-    //    auto duration2 = chrono::duration_cast<chrono::microseconds>(stop2 - start2);
-    //    cout << "Recursive Time: " << duration2.count()/1e6 << endl << "-----" << endl;
-    //
-    //    auto start3 = chrono::high_resolution_clock::now();
-    //    vector<int> fast_recursive_results = closest_find(temp);
-    //    auto stop3 = chrono::high_resolution_clock::now();
-    //    auto duration3 = chrono::duration_cast<chrono::microseconds>(stop3 - start3);
-    //    cout << "Fast Recursive Time: " << duration3.count()/1e6 << endl << "-----" << endl;
-
-
-        random_shuffle(pts, pts+num_pts);
-        vector<int> minInd = rand_finder();
-        cout << minInd[0] << " " << minInd[1] << endl;
-        cout << pts[minInd[0]].x << " " << pts[minInd[0]].y << endl;
-        cout << pts[minInd[1]].x << " " << pts[minInd[1]].y << endl;
-        cout << dist(pts[minInd[0]], pts[minInd[1]]) << endl;
-        //cout << "Randomized Time: " << duration.count()/1e6 << endl << "-----" << endl;
+    for (auto &pt : pts) {
+        pt = Point(random_double(), random_double());
     }
-    auto stop = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
-    cout << "average: " << duration.count()/(num_trials*1e6) << endl; // divide by 100
-    //cout << "--------------------" << endl;
+
+    auto startRec = chrono::high_resolution_clock::now();
+    vector<int> recursive_results = closest_find(temp);
+    auto stopRec = chrono::high_resolution_clock::now();
+    auto durationRec = chrono::duration_cast<chrono::microseconds>(stopRec - startRec);
+    cout << "Recursive Time: " << durationRec.count()/1e6 << endl << "-----" << endl;
+
+    auto startRand = chrono::high_resolution_clock::now();
+    random_shuffle(pts, pts+num_pts);
+    vector<int> minInd = rand_finder();
+    auto stopRand = chrono::high_resolution_clock::now();
+    auto durationRand = chrono::duration_cast<chrono::microseconds>(stopRand - startRand);
+    cout << "Randomized Time: " << durationRand.count()/1e6 << endl << "-----" << endl;
 
     return 0;
 }
