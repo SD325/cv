@@ -104,7 +104,6 @@ vector<int> rand_finder() {
                 if (new_x < 0 || new_y < 0 || new_x >= num_squares || new_y >= num_squares) continue;
                 int sub_ind = new_x + new_y*num_squares;
                 if ((*dict).find(sub_ind) == (*dict).end()) continue;
-                //if ((*dict)[sub_ind] == i) continue;
                 double this_dist = dist(pts[i], pts[(*dict)[sub_ind]]);
                 if (this_dist < min_dist) {
                     if (!changed) changed = true;
@@ -118,14 +117,8 @@ vector<int> rand_finder() {
             num_squares = (int) (2.0 / (min_dist)) + 1;
             side = min_dist / 2.0;
             orig_dist = min_dist;
-            //dict.erase(dict.begin(), dict.end());
             (*dict).clear();
             make_dictionary(num_squares, side, dict, i+1);
-//            for (int j = 0; j < num_pts; j++) {
-//                int curr_x = (int) (pts[j].x / side);
-//                int curr_y = (int) (pts[j].y / side);
-//                (*dict)[curr_x + curr_y*num_squares] = j;
-//            }
         }
         else {
             (*dict)[x + num_squares*y] = i;
@@ -265,9 +258,10 @@ int main() {
     auto durationRec = chrono::duration_cast<chrono::microseconds>(stopRec - startRec);
     cout << "Recursive Time: " << durationRec.count()/1e6 << endl << "-----" << endl;
 
+
     auto startRand = chrono::high_resolution_clock::now();
     random_shuffle(pts, pts+num_pts);
-    vector<int> minInd = rand_finder();
+    vector<int> randomized_results = rand_finder();
     auto stopRand = chrono::high_resolution_clock::now();
     auto durationRand = chrono::duration_cast<chrono::microseconds>(stopRand - startRand);
     cout << "Randomized Time: " << durationRand.count()/1e6 << endl << "-----" << endl;
