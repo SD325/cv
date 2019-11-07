@@ -16,7 +16,7 @@
 #include <chrono>
 #include <unordered_map>
 
-#define num_pts 1000000 // number of points
+#define num_pts 10000 // number of points
 #define num_trials 1
 
 using namespace std;
