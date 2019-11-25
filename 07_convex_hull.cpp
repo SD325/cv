@@ -69,6 +69,81 @@ void drawpt(int x, int y, int r, int g, int b) {
     ppm[x][y].b = b;
 }
 
+void drawLineNeg(int x1, int y1, int x2, int y2) {
+    if (x1 < x2) {
+        swap(x1, x2);
+        swap(y1, y2);
+    }
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    bool greater = false;
+    if (abs(dy) > abs(dx)) {
+        greater = true;
+        int t1 = x1 - (y2 - y1);
+        int t2 = y1 - (x2 - x1);
+        x2 = t1;
+        y2 = t2;
+    }
+    dx = x2 - x1;
+    dy = y2 - y1;
+    double m = abs(dy / (double) dx);
+    int j = y1;
+    double eps = m - 1.0;
+    for (int i = x1 - 1; i > x2; i--) {
+        if (greater) {
+            drawpt(x1 - (j - y1), y1 - (i - x1), 0, 0, 0);
+        }
+        else drawpt(i, j, 0, 0, 0);
+        if (eps >= 0) {
+            j++;
+            eps -= 1.0;
+        }
+        eps += m;
+    }
+
+}
+
+void drawLinePos(int x1, int y1, int x2, int y2) {
+    if (x1 > x2) {
+        swap(x1, x2);
+        swap(y1, y2);
+    }
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    double m = (double) dy / (double) dx;
+    bool switched = dy > dx;
+    if (switched) {
+        swap(x1, y1);
+        swap(x2, y2);
+        m = 1. / m;
+    }
+    int j = y1;
+    double eps = m - 1.0;
+    for (int i = x1; i < x2; i++) {
+        if (switched)
+            drawpt(j, i, 0, 0, 0);
+        else drawpt(i, j, 0, 0, 0);
+        if (eps >= 0) {
+            j++;
+            eps -= 1.0;
+        }
+        eps += m;
+    }
+
+}
+
+void drawLine(int x1, int y1, int x2, int y2) {
+    double slope = (double) (y2 - y1) / (double) (x2 - x1);
+    if (slope > 0) {
+        drawLinePos(x1, y1, x2, y2);
+        //cout << "positive" << endl;
+    }
+    else {
+        drawLineNeg(x1, y1, x2, y2);
+        //cout << "negative" << endl;
+    }
+}
+
 vector<int> brute_force(vector<int> curr, int len) {
     double min_dist = LONG_MAX;
     double this_dist = 0;
@@ -147,6 +222,26 @@ vector<int> merge_find() {
 }
 
 
+double dist_from_line(Point p1, Point p2, Point p)
+{
+    return abs((p.y - p1.y) * (p2.x - p1.x) - (p2.y - p1.y) * (p.x - p1.x));
+}
+
+
+
+
+
+void quickHull(int n, Point p1, Point p2, int side) {
+    int ind = -1;
+    int max_distance = 0;
+
+    for (int i = 0; i < n; i++) {
+        double this_dist = dist_from_line(p1, p2, pts[i]);
+        if (findSide(p1, p2, pts[i]) == side && temp > max_distance)
+    }
+}
+
+
 int main() {
     srand(time(nullptr));
 
@@ -170,7 +265,7 @@ int main() {
     drawpt((int) (N * pts[minInd.at(1)].x), (int) (N * pts[minInd.at(1)].y), 1, 0, 0);
 
     // WRITE TO PPM
-    ofstream image("02_closest_pair.ppm");
+    ofstream image("07_convex_hull.ppm");
     image << "P3 " << N << " " << N << " 1" << endl;
 
     for (auto &i : ppm) {
