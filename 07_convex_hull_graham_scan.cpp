@@ -221,7 +221,7 @@ int main() {
     quickHull();
 
     // WRITE TO PPM
-    ofstream image("07_quick_hull.ppm");
+    ofstream image("07_graham_scan.ppm");
     image << "P3 " << N << " " << N << " 1" << endl;
 
     for (auto &i : ppm) {
