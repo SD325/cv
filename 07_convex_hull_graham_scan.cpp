@@ -148,7 +148,7 @@ void drawLine(int x1, int y1, int x2, int y2) {
     }
 }
 
-Point nextToTop(stack<Point> &S) {
+Point second(stack<Point> &S) {
     Point p = S.top();
     S.pop();
     Point res = S.top();
@@ -166,8 +166,9 @@ int orientation(Point p, Point q, Point r)
 {
     double val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
 
-    if (val == 0.0) return 0;  // collinear
-    return (val > 0.0)? 1: 2; // clockwise or counterclockwise
+    if (val == 0.0) return 0; // collinear
+    if (val > 0.0) return 1; // clockwise
+    return 2; // counterclockwise
 }
 
 int compare(const void *vp1, const void *vp2) {
@@ -177,7 +178,8 @@ int compare(const void *vp1, const void *vp2) {
     int o = orientation(p0, *p1, *p2);
     if (o == 0) return (dist(p0, *p2) >= dist(p0, *p1))? -1 : 1;
 
-    return (o == 2)? -1: 1;
+    if (o == 2) return -1;
+    return 1;
 }
 void graham_scan() {
     double ymin = pts[0].y;
@@ -215,27 +217,24 @@ void graham_scan() {
     S.push(pts[2]);
 
     for (int i = 3; i < m; i++) {
-        while (orientation(nextToTop(S), S.top(), pts[i]) != 2){
+        while (orientation(second(S), S.top(), pts[i]) != 2){
             S.pop();
         }
         S.push(pts[i]);
     }
 
-    Point first;
-    Point prev;
+    Point first = S.top();
     bool fst = true;
+    Point prev;
     while (!S.empty()) {
         Point curr = S.top();
         if (fst) {
             fst = false;
-            first = curr;
             prev = curr;
             continue;
         }
-        // cout << "(" << p.x << ", " << p.y <<")" << endl;
         drawLine(curr.x, curr.y, prev.x, prev.y);
         prev = curr;
-
         S.pop();
     }
     drawLine(first.x, first.y, prev.x, prev.y);
