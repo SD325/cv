@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <vector>
 #include <set>
+#include <stack>
 
 #define N 800 // resolution of ppm file
 #define num_pts 75 // number of points
@@ -55,6 +56,7 @@ typedef struct Color {
 static Point pts[num_pts];
 static col ppm[N][N];
 static vector<Point> hull;
+Point p0;
 
 double random() {
     return (double) rand() / RAND_MAX;
@@ -146,57 +148,98 @@ void drawLine(int x1, int y1, int x2, int y2) {
     }
 }
 
-int findSide(Point p1, Point p2, Point p) {
-    double val = (p.y - p1.y) * (p2.x - p1.x) - (p2.y - p1.y) * (p.x - p1.x);
-
-    if (val > 0.0)
-        return 1;
-    if (val < 0.0)
-        return -1;
-    return 0;
+Point nextToTop(stack<Point> &S) {
+    Point p = S.top();
+    S.pop();
+    Point res = S.top();
+    S.push(p);
+    return res;
 }
 
-double lineDist(Point p1, Point p2, Point p) {
-    return abs ((p.y - p1.y) * (p2.x - p1.x) - (p2.y - p1.y) * (p.x - p1.x));
+void swap(Point &p1, Point &p2) {
+    Point temp = p1;
+    p1 = p2;
+    p2 = temp;
 }
 
-void qh_helper(Point p1, Point p2, int side) {
-    int ind = -1;
-    double max_dist = 0;
+int orientation(Point p, Point q, Point r)
+{
+    double val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
 
-    for (int i=0; i < num_pts; i++) {
-        double temp = lineDist(p1, p2, pts[i]);
-        if (findSide(p1, p2, pts[i]) == side && temp > max_dist) {
-            ind = i;
-            max_dist = temp;
+    if (val == 0.0) return 0;  // collinear
+    return (val > 0.0)? 1: 2; // clockwise or counterclockwise
+}
+
+int compare(const void *vp1, const void *vp2) {
+    auto *p1 = (Point *)vp1;
+    auto *p2 = (Point *)vp2;
+
+    int o = orientation(p0, *p1, *p2);
+    if (o == 0) return (dist(p0, *p2) >= dist(p0, *p1))? -1 : 1;
+
+    return (o == 2)? -1: 1;
+}
+void graham_scan() {
+    double ymin = pts[0].y;
+    int min = 0;
+    for (int i = 1; i < num_pts; i++) {
+        double y = pts[i].y;
+        if ((y < ymin) || (ymin == y && pts[i].x < pts[min].x)) {
+            ymin = pts[i].y;
+            min = i;
         }
     }
 
-    if (ind == -1){
-        hull.push_back(p1);
-        hull.push_back(p2);
-        drawLine(p1.x, p1.y, p2.x, p2.y);
-        return;
+    swap(pts[0], pts[min]);
+
+    p0 = pts[0];
+    qsort(&pts[1], num_pts-1, sizeof(Point), compare);
+
+
+    int m = 1; // size of modified array
+    for (int i = 1; i < num_pts; i++) {
+        while (i < num_pts-1 && orientation(p0, pts[i], pts[i+1]) == 0) {
+            i++;
+        }
+
+        pts[m] = pts[i];
+        m++;  // Update size of modified array
     }
 
-    qh_helper(pts[ind], p1, -findSide(pts[ind], p1, p2));
-    qh_helper(pts[ind], p2, -findSide(pts[ind], p2, p1));
-}
+    // convex hull not possible
+    if (m < 3) return;
 
-void quickHull() {
-    int min_x = 0;
-    int max_x = 0;
-    for (int i=1; i < num_pts; i++) {
-        if (pts[i].x < pts[min_x].x)
-            min_x = i;
-        if (pts[i].x > pts[max_x].x)
-            max_x = i;
+    stack<Point> S;
+    S.push(pts[0]);
+    S.push(pts[1]);
+    S.push(pts[2]);
+
+    for (int i = 3; i < m; i++) {
+        while (orientation(nextToTop(S), S.top(), pts[i]) != 2){
+            S.pop();
+        }
+        S.push(pts[i]);
     }
 
-    qh_helper(pts[min_x], pts[max_x], 1);
-    qh_helper(pts[min_x], pts[max_x], -1);
-}
+    Point first;
+    Point prev;
+    bool fst = true;
+    while (!S.empty()) {
+        Point curr = S.top();
+        if (fst) {
+            fst = false;
+            first = curr;
+            prev = curr;
+            continue;
+        }
+        // cout << "(" << p.x << ", " << p.y <<")" << endl;
+        drawLine(curr.x, curr.y, prev.x, prev.y);
+        prev = curr;
 
+        S.pop();
+    }
+    drawLine(first.x, first.y, prev.x, prev.y);
+}
 
 int main() {
     srand(time(nullptr));
@@ -218,7 +261,7 @@ int main() {
         drawpt(roundedX, roundedY, 0, 0, 0);
     }
 
-    quickHull();
+    graham_scan();
 
     // WRITE TO PPM
     ofstream image("07_graham_scan.ppm");
