@@ -52,7 +52,6 @@ typedef struct Color {
 // coordinates of vertices are doubles
 static Point pts[num_pts];
 static col ppm[N][N];
-static vector<Point> hull;
 
 double random() {
     return (double) rand() / RAND_MAX;
@@ -144,41 +143,36 @@ void drawLine(int x1, int y1, int x2, int y2) {
     }
 }
 
-int findSide(Point p1, Point p2, Point p) {
+int get_side(Point p1, Point p2, Point p) {
     double val = (p.y - p1.y) * (p2.x - p1.x) - (p2.y - p1.y) * (p.x - p1.x);
-
-    if (val > 0.0)
-        return 1;
-    if (val < 0.0)
-        return -1;
+    if (val > 0.0) return 1;
+    if (val < 0.0) return -1;
     return 0;
 }
 
-double lineDist(Point p1, Point p2, Point p) {
+double l_dist(Point p1, Point p2, Point p) {
     return abs ((p.y - p1.y) * (p2.x - p1.x) - (p2.y - p1.y) * (p.x - p1.x));
 }
 
 void qh_helper(Point p1, Point p2, int side) {
     int ind = -1;
-    double max_dist = 0;
+    double max_distance = 0;
 
     for (int i=0; i < num_pts; i++) {
-        double temp = lineDist(p1, p2, pts[i]);
-        if (findSide(p1, p2, pts[i]) == side && temp > max_dist) {
+        double temp = l_dist(p1, p2, pts[i]);
+        if (get_side(p1, p2, pts[i]) == side && temp > max_distance) {
             ind = i;
-            max_dist = temp;
+            max_distance = temp;
         }
     }
 
     if (ind == -1){
-        hull.push_back(p1);
-        hull.push_back(p2);
         drawLine(p1.x, p1.y, p2.x, p2.y);
         return;
     }
 
-    qh_helper(pts[ind], p1, -findSide(pts[ind], p1, p2));
-    qh_helper(pts[ind], p2, -findSide(pts[ind], p2, p1));
+    qh_helper(pts[ind], p1, -get_side(pts[ind], p1, p2));
+    qh_helper(pts[ind], p2, -get_side(pts[ind], p2, p1));
 }
 
 void quickHull() {
