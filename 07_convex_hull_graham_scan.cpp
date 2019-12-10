@@ -6,12 +6,14 @@
 #include <ctime>
 #include <fstream>
 #include <algorithm>
+#include <chrono>
 #include <vector>
 #include <set>
 #include <stack>
 
-#define N 800 // resolution of ppm file
-#define num_pts 75 // number of points
+#define num_trials 10
+#define N 400 // resolution of ppm file
+#define num_pts 1000000 // number of points
 
 using namespace std;
 
@@ -260,18 +262,22 @@ int main() {
         drawpt(roundedX, roundedY, 0, 0, 0);
     }
 
-    graham_scan();
+    auto start = chrono::high_resolution_clock::now();
+    for (int trials = 0; trials < num_trials; trials++) graham_scan();
+    auto stop = chrono::high_resolution_clock::now();
+    auto durationRec = chrono::duration_cast<chrono::microseconds>(stop - start);
+    cout << "Time: " << (durationRec.count()/1e6/num_trials) << endl << "-----" << endl;
 
     // WRITE TO PPM
     ofstream image("07_graham_scan.ppm");
     image << "P3 " << N << " " << N << " 1" << endl;
 
-    for (auto &i : ppm) {
-        for (auto &j : i) {
-            image << j.r << " " << j.g << " " << j.b << " ";
-        }
-        image << endl;
-    }
-    image.close();
+//    for (auto &i : ppm) {
+//        for (auto &j : i) {
+//            image << j.r << " " << j.g << " " << j.b << " ";
+//        }
+//        image << endl;
+//    }
+//    image.close();
     return 0;
 }

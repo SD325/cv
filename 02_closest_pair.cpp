@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <vector>
 
-#define N 800 // resolution of ppm file
+#define N 200 // resolution of ppm file
 #define num_pts 1000 // number of points
 
 using namespace std;
