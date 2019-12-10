@@ -94,26 +94,38 @@ int main() {
     int N;
     vector<double> a;
     string filename = "Valve_gaussian.ppm";
-    ifstream file(filename.c_str());
+    ifstream file(filename, ios::in | ios::binary);
     int max_val;
 //    if (file.good())
 //    {
-//        for (int j = 0; j < 5; j++) {
+//        for (int j = 0; j < 2; j++) {
 //            string sLine;
 //            getline(file, sLine);
 //            cout << sLine << endl;
 //        }
 //    }
-    string image_type, file_source;
-    file >> image_type >> file_source >> M >> N;
+    string image_type;
+    file >> image_type >> M >> N;
     file >> max_val;
-    double inp1 = 0.0;
-    double inp2 = 0.0;
-    double inp3 = 0.0;
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < N; j++) {
-            file >> inp1 >> inp2 >> inp3;
-            a.push_back((inp1 + inp2 + inp3)/3.0);
+    if (image_type == "P3") {
+        double inp1;
+        double inp2;
+        double inp3;
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                file >> inp1 >> inp2 >> inp3;
+                a.push_back((inp1 + inp2 + inp3) / 3.0);
+            }
+        }
+    }
+    else {
+        file.get();
+        unsigned char buffer[3];
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                file.read((char*) buffer , 3);
+                a.push_back((buffer[0] + buffer[1] + buffer[2])/3.0);
+            }
         }
     }
     vector<double> kernel1 = {2,  4,  5,  4,  2,
@@ -122,37 +134,46 @@ int main() {
                               4,  9, 12,  9,  4,
                               2,  4,  5,  4,  2};
     double factor1 = 1.0/159.0;
+    // cout << a.size() << endl;
     a = convolution(kernel1, 5, 5, factor1, a, M, N);
+    // cout << a.size() << endl;
 
+    vector<double> kernel2 = {-1, 0, 1,
+                              -2, 0, 2,
+                              -1, 0, 1};
+    vector<double> g_x = convolution(kernel2, 3, 3, 1, a, M, N);
 
+    vector<double> kernel3 = { 1, 2, 1,
+                               0, 0, 0,
+                              -1,-2,-1};
+    vector<double> g_y = convolution(kernel3, 3, 3, 1, a, M, N);
+
+    vector<double> finalized;
+    for (int i = 0; i < (int) a.size(); i++) {
+        finalized.push_back(sqrt((g_x[i]*g_x[i]) + (g_y[i]*g_y[i])));
+    }
+    double threshold = 70;
+    for (double& i : finalized) {
+        if (i < threshold) i = 0;
+    }
     file.close();
-    // white background
-//    for (auto &i : ppm) {
-//        for (auto &j : i) {
-//            j.r = 1;
-//            j.g = 1;
-//            j.b = 1;
-//        }
-//    }
-//    Point this_pt;
-//    for (auto &pt : pts) {
-//        this_pt = Point(random(), random());
-//        int roundedX = (int) (N * this_pt.x);
-//        int roundedY = (int) (N * this_pt.y);
-//        pt = Point(roundedX, roundedY);
-//        drawpt(roundedX, roundedY, 0, 0, 0);
-//    }
-//
 //        // WRITE TO PPM
-//    ofstream image("07_quick_hull.ppm");
-//    image << "P3 " << N << " " << N << " 1" << endl;
-//
-////    for (auto &i : ppm) {
-////        for (auto &j : i) {
-////            image << j.r << " " << j.g << " " << j.b << " ";
-////        }
-////        image << endl;
-////    }
-////    image.close();
+    ofstream image("08_edge_detection.ppm");
+    image << "P3 " << M << " " << N << " 1" << endl;
+
+    int index;
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < N; j++) {
+            index = M*i+j;
+            if (finalized[index]) {
+                image << 1 << " " << 1 << " " << 1 << " ";
+            }
+            else {
+                image << 0 << " " << 0 << " " << 0 << " ";
+            }
+        }
+        image << endl;
+    }
+    image.close();
     return 0;
 }
