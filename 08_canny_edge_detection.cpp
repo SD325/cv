@@ -14,43 +14,6 @@
 using namespace std;
 
 
-class Point {
-public:
-    double x;
-    double y;
-
-    Point(double x_, double y_) {
-        x = x_;
-        y = y_;
-    }
-
-    Point() {
-        Point(0, 0);
-    }
-    bool operator <(const Point & pt) const {
-        return x < pt.x;
-    }
-
-};
-
-typedef struct Color {
-    int r;
-    int g;
-    int b;
-
-    Color() {
-        r = 0;
-        g = 0;
-        b = 0;
-    }
-
-    Color(int r, int g, int b) {
-        this->r = r;
-        this->g = g;
-        this->b = b;
-    }
-} col;
-
 vector<double> convolution(vector<double> kernel, int kRows, int kCols, double factor, vector<double> in, int M, int N) {
     // find center position of kernel (half of kernel size)
     int kCenterX = kCols / 2;
@@ -92,7 +55,6 @@ int main() {
 
     int M;
     int N;
-    vector<double> a;
     string filename = "Valve_gaussian.ppm";
     ifstream file(filename, ios::in | ios::binary);
     int max_val;
@@ -107,6 +69,7 @@ int main() {
     string image_type;
     file >> image_type >> M >> N;
     file >> max_val;
+    vector<double> a(M*N);
     if (image_type == "P3") {
         double inp1;
         double inp2;
@@ -141,12 +104,14 @@ int main() {
     vector<double> kernel2 = {-1, 0, 1,
                               -2, 0, 2,
                               -1, 0, 1};
-    vector<double> g_x = convolution(kernel2, 3, 3, 1, a, M, N);
+    vector<double> g_x(M*N);
+    g_x = convolution(kernel2, 3, 3, 1, a, M, N);
 
     vector<double> kernel3 = { 1, 2, 1,
                                0, 0, 0,
                               -1,-2,-1};
-    vector<double> g_y = convolution(kernel3, 3, 3, 1, a, M, N);
+    vector<double> g_y(M*N);
+    g_y = convolution(kernel3, 3, 3, 1, a, M, N);
 
     vector<double> finalized;
     for (int i = 0; i < (int) a.size(); i++) {
