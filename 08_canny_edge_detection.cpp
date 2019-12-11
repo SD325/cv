@@ -8,8 +8,7 @@
 #include <chrono>
 #include <vector>
 
-//static int M;
-//static int N;
+#define threshold 100
 
 using namespace std;
 
@@ -18,12 +17,12 @@ vector<double> convolution(vector<double> kernel, int kRows, int kCols, double f
     // find center position of kernel (half of kernel size)
     int kCenterX = kCols / 2;
     int kCenterY = kRows / 2;
-    vector<double> out(M*N);
-    for(int i=0; i < M; ++i)              // rows
+    vector<double> out(N*M);
+    for(int i=0; i < N; ++i)              // rows
     {
-        for(int j=0; j < N; ++j)          // columns
+        for(int j=0; j < M; ++j)          // columns
         {
-            int index_1 = i * M + j;
+            int index_1 = i * N + j;
             for(int m=0; m < kRows; ++m)     // kernel rows
             {
                 int mm = kRows - 1 - m;      // row index of flipped kernel
@@ -37,8 +36,8 @@ vector<double> convolution(vector<double> kernel, int kRows, int kCols, double f
                     int jj = j + (kCenterX - nn);
 
                     // ignore input samples which are out of bound
-                    if (ii >= 0 && ii < M && jj >= 0 && jj < N ) {
-                        int index_2 = ii * M + jj;
+                    if (ii >= 0 && ii < N && jj >= 0 && jj < M) {
+                        int index_2 = ii * N + jj;
                         int index_3 = mm * kRows + nn;
                         out[index_1] += in[index_2] * kernel[index_3];
                     }
@@ -55,42 +54,35 @@ int main() {
 
     int M;
     int N;
-    vector<double> a;
-    string filename = "coinsEasy3.ppm";
+    string filename = "stop_2.ppm";
     ifstream file(filename, ios::in | ios::binary);
     int max_val;
-//    if (file.good())
-//    {
-//        for (int j = 0; j < 2; j++) {
-//            string sLine;
-//            getline(file, sLine);
-//            cout << sLine << endl;
-//        }
-//    }
     string image_type;
     file >> image_type >> M >> N;
     file >> max_val;
+    vector<double> a(N*M);
     if (image_type == "P3") {
         double inp1;
         double inp2;
         double inp3;
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
                 file >> inp1 >> inp2 >> inp3;
-                a.push_back((inp1 + inp2 + inp3) / 3.0);
+                a[i*N+j] = ((inp1 + inp2 + inp3) / 3.0);
             }
         }
     }
     else {
         file.get();
         unsigned char buffer[3];
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < N; j++) {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
                 file.read((char*) buffer , 3);
-                a.push_back((buffer[0] + buffer[1] + buffer[2])/3.0);
+                a[i*N+j] = (buffer[0] + buffer[1] + buffer[2])/3.0;
             }
         }
     }
+
     vector<double> kernel1 = {2,  4,  5,  4,  2,
                               4,  9, 12,  9,  4,
                               5, 12, 15, 12,  5,
@@ -115,7 +107,6 @@ int main() {
     for (int i = 0; i < (int) a.size(); i++) {
         finalized.push_back(sqrt((g_x[i]*g_x[i]) + (g_y[i]*g_y[i])));
     }
-    double threshold = 70;
     for (double& i : finalized) {
         if (i < threshold) i = 0;
     }
@@ -126,9 +117,9 @@ int main() {
     image << "P3 " << M << " " << N << " 1" << endl;
 
     int index;
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < N; j++) {
-            index = M*i+j;
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            index = N*i+j;
             if (finalized[index]) {
                 image << 0 << " " << 0 << " " << 0 << " ";
             }
