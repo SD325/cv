@@ -55,7 +55,8 @@ int main() {
 
     int M;
     int N;
-    string filename = "Valve_gaussian.ppm";
+    vector<double> a;
+    string filename = "coinsEasy3.ppm";
     ifstream file(filename, ios::in | ios::binary);
     int max_val;
 //    if (file.good())
@@ -69,7 +70,6 @@ int main() {
     string image_type;
     file >> image_type >> M >> N;
     file >> max_val;
-    vector<double> a(M*N);
     if (image_type == "P3") {
         double inp1;
         double inp2;
@@ -104,14 +104,12 @@ int main() {
     vector<double> kernel2 = {-1, 0, 1,
                               -2, 0, 2,
                               -1, 0, 1};
-    vector<double> g_x(M*N);
-    g_x = convolution(kernel2, 3, 3, 1, a, M, N);
+    vector<double> g_x = convolution(kernel2, 3, 3, 1, a, M, N);
 
     vector<double> kernel3 = { 1, 2, 1,
                                0, 0, 0,
                               -1,-2,-1};
-    vector<double> g_y(M*N);
-    g_y = convolution(kernel3, 3, 3, 1, a, M, N);
+    vector<double> g_y = convolution(kernel3, 3, 3, 1, a, M, N);
 
     vector<double> finalized;
     for (int i = 0; i < (int) a.size(); i++) {
@@ -122,7 +120,8 @@ int main() {
         if (i < threshold) i = 0;
     }
     file.close();
-//        // WRITE TO PPM
+
+        // WRITE TO PPM
     ofstream image("08_edge_detection.ppm");
     image << "P3 " << M << " " << N << " 1" << endl;
 
@@ -131,10 +130,10 @@ int main() {
         for (int j = 0; j < N; j++) {
             index = M*i+j;
             if (finalized[index]) {
-                image << 1 << " " << 1 << " " << 1 << " ";
+                image << 0 << " " << 0 << " " << 0 << " ";
             }
             else {
-                image << 0 << " " << 0 << " " << 0 << " ";
+                image << 1 << " " << 1 << " " << 1 << " ";
             }
         }
         image << endl;
