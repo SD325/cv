@@ -8,7 +8,8 @@
 #include <chrono>
 #include <vector>
 
-#define threshold 100
+#define threshold 70
+#define filename "coinsEasy.ppm"
 
 using namespace std;
 
@@ -22,7 +23,7 @@ vector<double> convolution(vector<double> kernel, int kRows, int kCols, double f
     {
         for(int j=0; j < M; ++j)          // columns
         {
-            int index_1 = i * N + j;
+            int index_1 = i * M + j;
             for(int m=0; m < kRows; ++m)     // kernel rows
             {
                 int mm = kRows - 1 - m;      // row index of flipped kernel
@@ -37,7 +38,7 @@ vector<double> convolution(vector<double> kernel, int kRows, int kCols, double f
 
                     // ignore input samples which are out of bound
                     if (ii >= 0 && ii < N && jj >= 0 && jj < M) {
-                        int index_2 = ii * N + jj;
+                        int index_2 = ii * M + jj;
                         int index_3 = mm * kRows + nn;
                         out[index_1] += in[index_2] * kernel[index_3];
                     }
@@ -54,13 +55,12 @@ int main() {
 
     int M;
     int N;
-    string filename = "stop_2.ppm";
     ifstream file(filename, ios::in | ios::binary);
     int max_val;
     string image_type;
     file >> image_type >> M >> N;
     file >> max_val;
-    vector<double> a(N*M);
+    vector<double> a;
     if (image_type == "P3") {
         double inp1;
         double inp2;
@@ -68,7 +68,7 @@ int main() {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
                 file >> inp1 >> inp2 >> inp3;
-                a[i*N+j] = ((inp1 + inp2 + inp3) / 3.0);
+                a.push_back((inp1 + inp2 + inp3) / 3.0);
             }
         }
     }
@@ -78,16 +78,16 @@ int main() {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
                 file.read((char*) buffer , 3);
-                a[i*N+j] = (buffer[0] + buffer[1] + buffer[2])/3.0;
+                a.push_back((buffer[0] + buffer[1] + buffer[2])/3.0);
             }
         }
     }
 
     vector<double> kernel1 = {2,  4,  5,  4,  2,
-                              4,  9, 12,  9,  4,
-                              5, 12, 15, 12,  5,
-                              4,  9, 12,  9,  4,
-                              2,  4,  5,  4,  2};
+                   4,  9, 12,  9,  4,
+                   5, 12, 15, 12,  5,
+                   4,  9, 12,  9,  4,
+                   2,  4,  5,  4,  2};
     double factor1 = 1.0/159.0;
     // cout << a.size() << endl;
     a = convolution(kernel1, 5, 5, factor1, a, M, N);
@@ -100,7 +100,7 @@ int main() {
 
     vector<double> kernel3 = { 1, 2, 1,
                                0, 0, 0,
-                              -1,-2,-1};
+                               -1,-2,-1};
     vector<double> g_y = convolution(kernel3, 3, 3, 1, a, M, N);
 
     vector<double> finalized;
@@ -114,18 +114,20 @@ int main() {
 
         // WRITE TO PPM
     ofstream image("08_edge_detection.ppm");
-    image << "P3 " << M << " " << N << " 1" << endl;
+    image << "P3 " << M << " " << N << " 255" << endl;
 
     int index;
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
-            index = N*i+j;
+            index = M*i+j;
             if (finalized[index]) {
-                image << 0 << " " << 0 << " " << 0 << " ";
+                image << 255 << " " << 255 << " " << 255 << " ";
             }
             else {
-                image << 1 << " " << 1 << " " << 1 << " ";
+                image << 0 << " " << 0 << " " << 0 << " ";
             }
+//            int x = (int) a[index];
+//            image << x << " " << x << " " << x << " ";
         }
         image << endl;
     }
