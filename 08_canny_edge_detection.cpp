@@ -9,7 +9,9 @@
 #include <vector>
 
 #define threshold 70
-#define filename "coinsEasy.ppm"
+#define upper_thresh 50
+#define lower_thresh 100
+#define filename "valve.ppm"
 
 using namespace std;
 
@@ -102,10 +104,93 @@ int main() {
                                0, 0, 0,
                                -1,-2,-1};
     vector<double> g_y = convolution(kernel3, 3, 3, 1, a, M, N);
-
-    vector<double> finalized;
+    vector<double> G;
+    for (int i = 0; i < (int) a.size(); i++) G.push_back(sqrt((g_x[i]*g_x[i]) + (g_y[i]*g_y[i])));
+    vector<double> theta;
+    double temp;
     for (int i = 0; i < (int) a.size(); i++) {
-        finalized.push_back(sqrt((g_x[i]*g_x[i]) + (g_y[i]*g_y[i])));
+        temp = atan2(g_y[i], g_x[i])*180/M_PI;
+        temp = round(temp/45);
+        theta.push_back(temp);  // -4, -3, ... , 3, 4
+        // cout << theta[i] << " " << theta[i]*45 << endl;
+    }
+    vector<double> finalized;
+    int ind1, ind2;
+    for (int i = 0; i < (int) a.size(); i++) {
+        finalized.push_back(G[i]);
+        if (theta[i] == 0 || theta[i] == 4 || theta[i] == -4) {
+            ind1 = i-1;
+            ind2 = i+1;
+            // check
+            if (ind1 % M != M-1) {
+                if (G[i] <= G[ind1]) {
+                    finalized[i] = 0;
+                    continue;
+                }
+            }
+            if (ind2 % M != 0) {
+                if (G[i] <= G[ind2]) {
+                    finalized[i] = 0;
+                    continue;
+                }
+            }
+        }
+        else if (theta[i] == 2 || theta[i] == -2) {
+            ind1 = i-M;
+            ind2 = i+M;
+            // check
+            if (ind1 >= 0) {
+                if (G[i] <= G[ind1]) {
+                    finalized[i] = 0;
+                    continue;
+                }
+            }
+            if (ind2 < M*N) {
+                if (G[i] <= G[ind2]) {
+                    finalized[i] = 0;
+                    continue;
+                }
+            }
+        }
+        else if (theta[i] == 3 || theta[i] == -1) {
+            ind1 = i-M-1;
+            ind2 = i+M+1;
+            // check
+            if (ind1 >= 0 && ind1 % M != M-1) {
+                if (G[i] <= G[ind1]) {
+                    finalized[i] = 0;
+                    continue;
+                }
+            }
+            if (ind2 < M*N && ind2 % M != 0) {
+                if (G[i] <= G[ind2]) {
+                    finalized[i] = 0;
+                    continue;
+                }
+            }
+        }
+        else if (theta[i] == 1 || theta[i] == -3) {
+            ind1 = i-M+1;
+            ind2 = i+M-1;
+            // check
+            if (ind2 >= 0 && ind2 % M != M-1) {
+                if (G[i] <= G[ind2]) {
+                    finalized[i] = 0;
+                    continue;
+                }
+            }
+            if (ind1 < M*N && ind1 % M != 0) {
+                if (G[i] <= G[ind1]) {
+                    finalized[i] = 0;
+                    continue;
+                }
+            }
+        }
+        else {
+            cout << "Whoops! Something went wrong!" << endl;
+            break;
+        }
+
     }
     for (double& i : finalized) {
         if (i < threshold) i = 0;
