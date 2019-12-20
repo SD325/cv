@@ -7,10 +7,10 @@
 #include <fstream>
 #include <chrono>
 #include <vector>
+#include <unordered_set>
 
-#define threshold 70
-#define upper_thresh 50
-#define lower_thresh 100
+#define hi_thresh 70
+#define low_thresh 40
 #define filename "valve.ppm"
 
 using namespace std;
@@ -52,8 +52,22 @@ vector<double> convolution(vector<double> kernel, int kRows, int kCols, double f
     return out;
 }
 
+static vector<double> finalized;
+static unordered_set<int> visited;
+void dfs(int ind, int M, int N) {
+    visited.insert(ind);
+    if (low_thresh <= finalized[ind] && finalized[ind] < hi_thresh) finalized[ind] = (double) hi_thresh;
+    vector<int> neigh = {ind-M-1, ind-M, ind-M+1, ind-1, ind+1, ind+M-1, ind+M, ind+M+1};
+    for (int& n : neigh) {
+        if (n < 0 || n >= M*N || (ind % M == 0 && n % M == M-1) || (ind % M == M-1 && n % M == 0)) continue;
+        if (visited.find(n) != visited.end()) continue;
+        if (finalized[n] < low_thresh) continue;
+        dfs(n, M, N);
+    }
+}
+
 int main() {
-    srand(time(nullptr));
+    // srand(time(nullptr));
 
     int M;
     int N;
@@ -84,6 +98,7 @@ int main() {
             }
         }
     }
+    file.close();
 
     vector<double> kernel1 = {2,  4,  5,  4,  2,
                    4,  9, 12,  9,  4,
@@ -91,32 +106,28 @@ int main() {
                    4,  9, 12,  9,  4,
                    2,  4,  5,  4,  2};
     double factor1 = 1.0/159.0;
-    // cout << a.size() << endl;
-    a = convolution(kernel1, 5, 5, factor1, a, M, N);
-    // cout << a.size() << endl;
+    vector<double> temp_ = convolution(kernel1, 5, 5, factor1, a, M, N);
 
     vector<double> kernel2 = {-1, 0, 1,
                               -2, 0, 2,
                               -1, 0, 1};
-    vector<double> g_x = convolution(kernel2, 3, 3, 1, a, M, N);
+    vector<double> g_x = convolution(kernel2, 3, 3, 1, temp_, M, N);
 
     vector<double> kernel3 = { 1, 2, 1,
                                0, 0, 0,
                                -1,-2,-1};
-    vector<double> g_y = convolution(kernel3, 3, 3, 1, a, M, N);
+    vector<double> g_y = convolution(kernel3, 3, 3, 1, temp_, M, N);
     vector<double> G;
-    for (int i = 0; i < (int) a.size(); i++) G.push_back(sqrt((g_x[i]*g_x[i]) + (g_y[i]*g_y[i])));
+    for (int i = 0; i < M*N; i++) G.push_back(sqrt((g_x[i]*g_x[i]) + (g_y[i]*g_y[i])));
     vector<double> theta;
     double temp;
-    for (int i = 0; i < (int) a.size(); i++) {
+    for (int i = 0; i < M*N; i++) {
         temp = atan2(g_y[i], g_x[i])*180/M_PI;
         temp = round(temp/45);
         theta.push_back(temp);  // -4, -3, ... , 3, 4
-        // cout << theta[i] << " " << theta[i]*45 << endl;
     }
-    vector<double> finalized;
     int ind1, ind2;
-    for (int i = 0; i < (int) a.size(); i++) {
+    for (int i = 0; i < M*N; i++) {
         finalized.push_back(G[i]);
         if (theta[i] == 0 || theta[i] == 4 || theta[i] == -4) {
             ind1 = i-1;
@@ -190,12 +201,17 @@ int main() {
             cout << "Whoops! Something went wrong!" << endl;
             break;
         }
-
+        if (finalized[i] < low_thresh) finalized[i] = 0;
+    }
+    for (int i = 0; i < M*N; i++) {
+        if (finalized[i] >= hi_thresh && visited.find(i) == visited.end()) {
+            dfs(i, M, N);
+        }
     }
     for (double& i : finalized) {
-        if (i < threshold) i = 0;
+        if (i < hi_thresh) i = 0;
     }
-    file.close();
+
 
         // WRITE TO PPM
     ofstream image("08_edge_detection.ppm");
