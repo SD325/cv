@@ -1,6 +1,7 @@
 //
 // Created by Spandan Das on 11/21/2019.
 //
+#include <bits/stdc++.h>
 #include <iostream>
 #include <cmath>
 #include <ctime>
@@ -8,10 +9,11 @@
 #include <chrono>
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 
 #define hi_thresh 70
 #define low_thresh 40
-#define filename "valve.ppm"
+#define filename "penny.ppm"
 
 using namespace std;
 
@@ -67,8 +69,6 @@ void dfs(int ind, int M, int N) {
 }
 
 int main() {
-    // srand(time(nullptr));
-
     int M;
     int N;
     ifstream file(filename, ios::in | ios::binary);
@@ -213,15 +213,69 @@ int main() {
     }
 
 
+    // Circle Detection
+    int rmin = 10;
+    int rmax = 60;
+    double theta_step = 5.0;
+    double circ_threshold = 0.4;
+
+    int curr_index;
+    int a_, b_;
+    unordered_map<string, int> acc = {};
+    string st;
+    for (int x = 0; x < N; x++) {
+        for (int y = 0; y < M; y++) {
+            curr_index = M*x+y;
+            if (finalized[curr_index]) {
+                for (int r = rmin; r <= rmax; r++) {
+                    for (double t = 0.0; t < 360.0; t += theta_step) {
+                        a_ = x - (int) r * cos(t * M_PI / 180.);
+                        b_ = y - (int) r * sin(t * M_PI / 180.);
+                        // cout << a_ << " " << b_ << endl;
+                        st = to_string(a_) + " " + to_string(b_) + " " + to_string(r);
+                        // cout << st << endl;
+                        acc[st]++;
+                        // cout << st << " --> " << acc[st] << endl;
+                    }
+                }
+            }
+        }
+    }
+    unordered_set<int> circ_poss;
+    int itr;
+    int r = 0;
+    vector<int> abr;
+    int frq = 0;
+    for (auto i : acc) {
+        st = i.first;
+        frq = i.second;
+        abr.clear();
+        istringstream ss(st);
+        for (itr = 0; itr < 3; itr++) {
+            string word;
+            ss >> word;
+            // cout << word << endl;
+            abr.push_back(stoi(word));
+        }
+        a_ = abr[0]; b_ = abr[1]; r = abr[2];
+        if (frq / (360. / theta_step) >= circ_threshold) {
+            cout << frq / (360. / theta_step) << " " << a_ << " " << b_ << " " << r << endl;
+            circ_poss.insert(M * a_ + b_);
+        }
+    }
+
     // WRITE TO PPM
-    ofstream image("08_edge_detection.ppm");
+    ofstream image("09_coins_project.ppm");
     image << "P3 " << M << " " << N << " 255" << endl;
 
     int index;
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
             index = M*i+j;
-            if (finalized[index]) {
+            if (circ_poss.find(index) != circ_poss.end()) {
+                image << 255 << " " << 0 << " " << 0 << " ";
+            }
+            else if (finalized[index]) {
                 image << 255 << " " << 255 << " " << 255 << " ";
             }
             else {
