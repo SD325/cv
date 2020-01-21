@@ -13,10 +13,13 @@
 
 #define hi_thresh 70
 #define low_thresh 40
-#define filename "penny.ppm"
+#define filename "coinsEasy_compress.ppm"
 
 using namespace std;
 
+bool sortbysecdesc(const pair<string,int> &a, const pair<string,int> &b){
+    return a.second > b.second;
+}
 
 vector<double> convolution(vector<double> kernel, int kRows, int kCols, double factor, vector<double> in, int M, int N) {
     // find center position of kernel (half of kernel size)
@@ -214,39 +217,56 @@ int main() {
 
 
     // Circle Detection
-    int rmin = 10;
+    int rmin = 5;
     int rmax = 60;
-    double theta_step = 5.0;
-    double circ_threshold = 0.4;
+    // double theta_step = 5.0;
+    int circ_threshold = 15;
 
     int curr_index;
     int a_, b_;
-    unordered_map<string, int> acc = {};
+    double t;
+    map<string, int> acc = {};
     string st;
     for (int x = 0; x < N; x++) {
         for (int y = 0; y < M; y++) {
             curr_index = M*x+y;
             if (finalized[curr_index]) {
-                for (int r = rmin; r <= rmax; r++) {
-                    for (double t = 0.0; t < 360.0; t += theta_step) {
-                        a_ = x - (int) r * cos(t * M_PI / 180.);
-                        b_ = y - (int) r * sin(t * M_PI / 180.);
-                        // cout << a_ << " " << b_ << endl;
+                for (int sign = -2; sign < 2; sign+=1) {
+                    t = atan2(g_y[curr_index], g_x[curr_index])  + (double) sign * M_PI / 2.0;
+                    for (int r = rmin; r <= rmax; r++) {
+                        a_ = x - (int) r * cos(t);
+                        b_ = y - (int) r * sin(t);
+                        if (a_ < 0 || a_ >= N || b_ < 0 || b_ >= M) break;
                         st = to_string(a_) + " " + to_string(b_) + " " + to_string(r);
-                        // cout << st << endl;
                         acc[st]++;
-                        // cout << st << " --> " << acc[st] << endl;
                     }
                 }
             }
         }
     }
+
+    vector<pair<string, int>> votes;
+    for (auto i : acc) votes.push_back(make_pair(i.first, i.second));
+    sort(votes.begin(), votes.end(), sortbysecdesc);
+
+//    typedef function<bool(pair<string, int>, pair<string, int>)> Comparator;
+//    Comparator compFunctor =
+//            [](pair<string, int> elem1 ,pair<string, int> elem2) {
+//                return elem1.second > elem2.second;
+//            };
+//    set<pair<string, int>, Comparator> acc_(acc.begin(), acc.end(), compFunctor);
+
+
     unordered_set<int> circ_poss;
+    map<int, int> loc_to_rad;
+    int check_x, check_y, check_r;
     int itr;
     int r = 0;
     vector<int> abr;
     int frq = 0;
-    for (auto i : acc) {
+    bool circle_check;
+    int min_rad = max(M, N);
+    for (auto i : votes) {
         st = i.first;
         frq = i.second;
         abr.clear();
@@ -254,15 +274,63 @@ int main() {
         for (itr = 0; itr < 3; itr++) {
             string word;
             ss >> word;
-            // cout << word << endl;
             abr.push_back(stoi(word));
+            // cout << word << " ";
         }
+        // cout << endl;
         a_ = abr[0]; b_ = abr[1]; r = abr[2];
-        if (frq / (360. / theta_step) >= circ_threshold) {
-            cout << frq / (360. / theta_step) << " " << a_ << " " << b_ << " " << r << endl;
+        if (frq >= circ_threshold) {
+            circle_check = true;
+            for (auto checker : loc_to_rad) {
+                check_x = checker.first / M;
+                check_y = checker.first % M;
+                check_r = checker.second;
+                if ((a_ - check_x)*(a_ - check_x) + (b_ - check_y)*(b_ - check_y) <= check_r * check_r) {
+                    circle_check = false;
+                    break;
+                }
+            }
+            if (!circle_check) continue;
+            // cout << frq << " " << a_ << " " << b_ << " " << r << endl;
             circ_poss.insert(M * a_ + b_);
+            loc_to_rad[M * a_ + b_] = r;
+            min_rad = min(min_rad, r);
         }
     }
+
+    int cents = 0;
+    vector<double> diam_ratios =
+            {750. / 705., 835. / 705., 705. / 705., 955. / 705., 1205. / 705., 1043. / 705.}; // p, n, d, q, hD, D
+
+    int penn = 0; int nick = 0; int dime = 0; int quar = 0; int half = 0; int doll = 0;
+    int closest_ind = 0; double min_diff; double this_diff;
+    for (auto i : loc_to_rad) {
+        check_r = i.second;
+        min_diff = (double) max(M, N);
+        for (itr = 0; itr < 6; itr++) {
+            this_diff = abs(check_r / (double) min_rad - diam_ratios[itr]);
+            if (this_diff < min_diff) {
+                min_diff = this_diff;
+                closest_ind = itr;
+            }
+        }
+        if (closest_ind == 0) penn++;
+        else if (closest_ind == 1) nick++;
+        else if (closest_ind == 2) dime++;
+        else if (closest_ind == 3) quar++;
+        else if (closest_ind == 4) half++;
+        else if (closest_ind == 5) doll++;
+    }
+//    cout << "p: " << penn << endl;
+//    cout << "n: " << nick << endl;
+//    cout << "d: " << dime << endl;
+//    cout << "q: " << quar << endl;
+//    cout << "hD: " << half << endl;
+//    cout << "D: " << doll << endl;
+    int sum = penn + 5 * nick + 10 * dime + 25 * quar + 50 * half + 100 * doll;
+
+    cout << "Total: " << sum << " cents" << endl;
+
 
     // WRITE TO PPM
     ofstream image("09_coins_project.ppm");

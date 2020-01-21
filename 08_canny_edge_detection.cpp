@@ -11,7 +11,7 @@
 
 #define hi_thresh 70
 #define low_thresh 40
-#define filename "valve.ppm"
+#define filename "coinsEasy_compress.ppm"
 
 using namespace std;
 
