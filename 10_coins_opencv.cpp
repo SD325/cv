@@ -3,13 +3,12 @@
 #include "opencv2/imgproc.hpp"
 using namespace cv;
 using namespace std;
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     const char* filename = argc >=2 ? argv[1] : "C:\\Users\\Spandan Das\\CLionProjects\\cv\\coinsEasy_comp.png";
     // Loads an image
     Mat src = imread( samples::findFile( filename ), IMREAD_COLOR );
-    // Check if image is loaded fine
-    if(src.empty()){
+    // Check if image is loaded properly
+    if(src.empty()) {
         printf(" Error opening image\n");
         printf(" Program Arguments: [image_name -- default %s] \n", filename);
         return EXIT_FAILURE;
@@ -19,7 +18,7 @@ int main(int argc, char** argv)
     medianBlur(gray, gray, 5);
     vector<Vec3f> circles;
     HoughCircles(gray, circles, HOUGH_GRADIENT, 1,
-                 gray.rows/50,  // change this value to detect circles with different distances to each other
+                 gray.rows/16,  // change this value to detect circles with different distances to each other
                  100, 30, 10, 50 // change the last two parameters
             // (min_radius & max_radius) to detect larger circles
     );
