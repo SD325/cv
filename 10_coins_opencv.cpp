@@ -4,7 +4,7 @@
 using namespace cv;
 using namespace std;
 int main(int argc, char** argv) {
-    const char* filename = argc >=2 ? argv[1] : "C:\\Users\\Spandan Das\\CLionProjects\\cv\\coinsHarder_comp.png";
+    const char* filename = argc >=2 ? argv[1] : "C:\\Users\\Spandan Das\\CLionProjects\\cv\\coinsHardest_comp.png";
     // Loads an image
     Mat src = imread( samples::findFile( filename ), IMREAD_COLOR );
     // Check if image is loaded properly
@@ -18,8 +18,8 @@ int main(int argc, char** argv) {
     medianBlur(gray, gray, 5);
     vector<Vec3f> circles;
     HoughCircles(gray, circles, HOUGH_GRADIENT, 1,
-                 11,  // change this value to detect circles with different distances to each other
-                 25, 20, 21, 30 // change the last two parameters
+                 20,  // change this value to detect circles with different distances to each other
+                 30, 40, 17, 55 // change the last two parameters
             // (min_radius & max_radius) to detect larger circles
     );
 
