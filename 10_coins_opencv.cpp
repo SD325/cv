@@ -4,7 +4,7 @@
 using namespace cv;
 using namespace std;
 int main(int argc, char** argv) {
-    const char* filename = argc >=2 ? argv[1] : "C:\\Users\\Spandan Das\\CLionProjects\\cv\\coinsHardest_comp.png";
+    const char* filename = argc >=2 ? argv[1] : "C:\\Users\\Spandan Das\\CLionProjects\\cv\\coinsHarder_comp.png";
     // Loads an image
     Mat src = imread( samples::findFile( filename ), IMREAD_COLOR );
     // Check if image is loaded properly
@@ -30,9 +30,9 @@ int main(int argc, char** argv) {
         int radius = c[2];
         Point center = Point(c[0], c[1]);
         // circle center
-        circle( src, center, 1, Scalar(0,100,100), 3, LINE_AA);
+//        circle( src, center, 1, Scalar(0,100,100), 3, LINE_AA);
         // circle outline
-        circle( src, center, radius, Scalar(255,0,255), 3, LINE_AA);
+        circle( src, center, radius, Scalar(0,0,255), 3, LINE_AA);
 
     }
     imwrite("coins_OpenCV_output.png", src);
